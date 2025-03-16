@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"errors"
 	"time"
 
 	"go.uber.org/fx"
@@ -14,7 +15,7 @@ type Service interface {
 	SetOnlineSince(time.Time)
 
 	// OnlineSince returns the time since the system was online
-	OnlineSince() time.Duration
+	OnlineSince() (time.Duration, error)
 }
 
 // Params defines the dependencies that the healthcheck module needs
@@ -23,7 +24,7 @@ type Params struct {
 }
 
 type service struct {
-	onlineSince time.Time
+	onlineSince *time.Time
 }
 
 // New returns an implementation of Healthcheck interface
@@ -32,9 +33,12 @@ func New(p Params) Service {
 }
 
 func (s *service) SetOnlineSince(t time.Time) {
-	s.onlineSince = t
+	s.onlineSince = &t
 }
 
-func (s *service) OnlineSince() time.Duration {
-	return time.Since(s.onlineSince)
+func (s *service) OnlineSince() (time.Duration, error) {
+	if s.onlineSince == nil {
+		return time.Duration(0), errors.New("online since is not set")
+	}
+	return time.Since(*s.onlineSince), nil
 }

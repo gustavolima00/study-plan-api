@@ -47,12 +47,16 @@ func New(p Params) Handler {
 //	@Tags			healthcheck
 //	@Produce		json
 //	@Success		200	{object}	Status
+//	@Failure		500	{string}	error
 //	@Router			/ [get]
 func (h *handler) GetAPIStatus(e echo.Context) error {
-	onlineTime := h.hcService.OnlineSince().String()
+	onlineTime, err := h.hcService.OnlineSince()
+	if err != nil {
+		return e.JSON(http.StatusInternalServerError, err.Error())
+	}
 
 	status := hcmodel.Status{
-		OnlineTime: onlineTime,
+		OnlineTime: onlineTime.String(),
 	}
 
 	return e.JSON(http.StatusOK, status)
