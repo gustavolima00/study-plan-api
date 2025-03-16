@@ -1,0 +1,12 @@
+basePath: /
+info:
+  contact: {}
+  description: This is a sample API for Go using Swagger
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Go Sample API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
