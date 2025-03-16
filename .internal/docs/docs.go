@@ -36,6 +36,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/healthcheck.Status"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }

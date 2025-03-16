@@ -7,7 +7,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.uber.org/fx"
 
-	_ "go-api/docs"
+	_ "go-api/.internal/docs"
 	"go-api/handlers/healthcheck"
 )
 
