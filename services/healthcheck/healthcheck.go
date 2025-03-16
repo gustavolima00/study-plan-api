@@ -6,10 +6,10 @@ import (
 	"go.uber.org/fx"
 )
 
-// Healthcheck interface define functions
+// Service interface define functions
 // that returns the database connection status
 // last time the sync was done and the system status
-type Healthcheck interface {
+type Service interface {
 	// SetOnlineSince sets the time the system was online
 	SetOnlineSince(time.Time)
 
@@ -22,19 +22,19 @@ type Params struct {
 	fx.In
 }
 
-type hc struct {
+type service struct {
 	onlineSince time.Time
 }
 
 // New returns an implementation of Healthcheck interface
-func New(p Params) Healthcheck {
-	return &hc{}
+func New(p Params) Service {
+	return &service{}
 }
 
-func (h *hc) SetOnlineSince(t time.Time) {
-	h.onlineSince = t
+func (s *service) SetOnlineSince(t time.Time) {
+	s.onlineSince = t
 }
 
-func (h *hc) OnlineSince() time.Duration {
-	return time.Since(h.onlineSince)
+func (s *service) OnlineSince() time.Duration {
+	return time.Since(s.onlineSince)
 }

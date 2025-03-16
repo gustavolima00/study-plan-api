@@ -1,4 +1,10 @@
 basePath: /
+definitions:
+  healthcheck.Status:
+    properties:
+      online_time:
+        type: string
+    type: object
 info:
   contact: {}
   description: This is a sample API for Go using Swagger
@@ -8,5 +14,18 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Go Sample API
   version: "1.0"
-paths: {}
+paths:
+  /:
+    get:
+      description: Get the status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/healthcheck.Status'
+      summary: Get API status
+      tags:
+      - healthcheck
 swagger: "2.0"
