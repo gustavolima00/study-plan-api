@@ -9,6 +9,7 @@ import (
 
 	"go-api/config"
 	"go-api/server"
+	"go-api/services"
 )
 
 // @title Go Sample API
@@ -26,6 +27,7 @@ func main() {
 	app := fx.New(
 		config.Module,
 		server.Module,
+		services.Module,
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
