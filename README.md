@@ -2,6 +2,15 @@
 
 This project is an example of a Go API using the `fx` framework. It demonstrates how to set up a simple API with health check endpoints, Swagger documentation, and mock services for testing.
 
+## Tools Used
+
+- **Go**: The main programming language used for this project.
+- **Fx**: A dependency injection framework for Go.
+- **Echo**: A high-performance, extensible, minimalist web framework for Go.
+- **Swagger**: Used for API documentation.
+- **Mockery**: A mock code autogenerator for Golang.
+- **Docker**: Used to containerize the application.
+
 ## Table of Contents
 
 - [Setup](#setup)
@@ -14,7 +23,7 @@ This project is an example of a Go API using the `fx` framework. It demonstrates
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/go-api.git
+    git clone https://github.com/gustavolima00/sample-go-fx-api.git go-api
     cd go-api
     ```
 
