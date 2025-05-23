@@ -7,19 +7,19 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
 
-	"go-api/config/config"
+	"go-api/config"
 )
 
 // Params defines the dependencies that the server module needs
-type Params struct {
+type ServerParams struct {
 	fx.In
 
 	Lifecycle fx.Lifecycle
 	Config    *config.Config
 }
 
-// New returns a pointer to Server
-func New(p Params) *echo.Echo {
+// NewServer returns a pointer to Server
+func NewServer(p ServerParams) *echo.Echo {
 	e := echo.New()
 
 	p.Lifecycle.Append(fx.Hook{

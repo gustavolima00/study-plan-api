@@ -12,9 +12,9 @@ type Config struct {
 	Port    string `env:"PORT" envDefault:"8080"`
 }
 
-// New will parse the necessary env vars to
+// NewConfig will parse the necessary env vars to
 // struct Config
-func New() *Config {
+func NewConfig() *Config {
 	c := new(Config)
 
 	if err := env.Parse(c); err != nil {

@@ -1,4 +1,4 @@
-package routes
+package server
 
 import (
 	// Generate automatically the swagger docs
@@ -12,15 +12,15 @@ import (
 )
 
 // Params defines the dependencies for the routes module.
-type Params struct {
+type RegisterRoutesParams struct {
 	fx.In
 
 	Echo        *echo.Echo
 	Healthcheck healthcheck.Handler
 }
 
-// Register registers the routes for the API.
-func Register(p Params) {
+// RegisterRoutes registers the routes for the API.
+func RegisterRoutes(p RegisterRoutesParams) {
 	p.Echo.GET("/", p.Healthcheck.GetAPIStatus)
 
 	p.Echo.GET("/swagger/*any", echoSwagger.WrapHandler)
