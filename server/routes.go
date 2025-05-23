@@ -31,6 +31,7 @@ func RegisterRoutes(p RegisterRoutesParams) {
 	// Authentication routes
 	p.Echo.POST("/auth/login", p.AuthHandler.CreateSession)
 	p.Echo.POST("/auth/refresh", p.AuthHandler.UpdateSession)
+	p.Echo.POST("/auth/logout", p.AuthHandler.FinishSession)
 	p.Echo.GET("/auth/user", p.AuthHandler.GetUser, p.Middlewares.AuthMiddleware())
 
 }

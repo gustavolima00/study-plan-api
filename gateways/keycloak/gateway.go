@@ -13,9 +13,10 @@ const (
 )
 
 type KeycloakGateway interface {
-	Login(ctx context.Context, username, password string) (*models.GetOIDCTokenResponse, error)
-	Refresh(ctx context.Context, refreshToken string) (*models.GetOIDCTokenResponse, error)
-	VerifyToken(ctx context.Context, accessToken string) (*models.IntrospectOIDCTokenResponse, error)
+	GetOIDCToken(ctx context.Context, username, password string) (*models.GetOIDCTokenResponse, error)
+	RefreshOIDCToken(ctx context.Context, refreshToken string) (*models.GetOIDCTokenResponse, error)
+	RevokeOIDCToken(ctx context.Context, refreshToken string) error
+	IntrospectOIDCToken(ctx context.Context, accessToken string) (*models.IntrospectOIDCTokenResponse, error)
 }
 
 type keycloakGateway struct {
@@ -34,7 +35,7 @@ func NewKeycloakGateway(params KeycloakGatewayParams) (KeycloakGateway, error) {
 	}, nil
 }
 
-func (g *keycloakGateway) Login(ctx context.Context, username, password string) (*models.GetOIDCTokenResponse, error) {
+func (g *keycloakGateway) GetOIDCToken(ctx context.Context, username, password string) (*models.GetOIDCTokenResponse, error) {
 	request := models.GetOIDCTokenRequest{
 		GrantType: passwordGrant,
 		Username:  username,
@@ -43,7 +44,7 @@ func (g *keycloakGateway) Login(ctx context.Context, username, password string) 
 	return g.client.GetOIDCToken(ctx, request)
 }
 
-func (g *keycloakGateway) Refresh(ctx context.Context, refreshToken string) (*models.GetOIDCTokenResponse, error) {
+func (g *keycloakGateway) RefreshOIDCToken(ctx context.Context, refreshToken string) (*models.GetOIDCTokenResponse, error) {
 	request := models.GetOIDCTokenRequest{
 		GrantType:    refreshTokenGrant,
 		RefreshToken: refreshToken,
@@ -52,7 +53,15 @@ func (g *keycloakGateway) Refresh(ctx context.Context, refreshToken string) (*mo
 	return g.client.GetOIDCToken(ctx, request)
 }
 
-func (g *keycloakGateway) VerifyToken(ctx context.Context, accessToken string) (*models.IntrospectOIDCTokenResponse, error) {
+func (g *keycloakGateway) RevokeOIDCToken(ctx context.Context, refreshToken string) error {
+	request := models.RevokeOIDCTokenRequest{
+		Token: refreshToken,
+	}
+
+	return g.client.RevokeOIDCToken(ctx, request)
+}
+
+func (g *keycloakGateway) IntrospectOIDCToken(ctx context.Context, accessToken string) (*models.IntrospectOIDCTokenResponse, error) {
 	request := models.IntrospectOIDCTokenRequest{
 		AccessToken: accessToken,
 	}

@@ -9,6 +9,12 @@ type UpdateSessionRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
+type FinishSessionRequest struct {
+	RefreshToken string `json:"access_token" validate:"required"`
+}
+
+type FinishSessionResponse struct{}
+
 type VerifySessionRequest struct {
 	AccessToken string `json:"access_token" validate:"required"`
 }
@@ -19,7 +25,6 @@ type SessionInfo struct {
 	RefreshExpiresIn int    `json:"refresh_expires_in"`
 	RefreshToken     string `json:"refresh_token"`
 	TokenType        string `json:"token_type"`
-	NotBeforePolicy  int    `json:"not_before_policy"`
 	SessionState     string `json:"session_state"`
 	Scope            string `json:"scope"`
 }

@@ -11,7 +11,7 @@ type Config struct {
 	Port string `env:"PORT" envDefault:"8080"`
 
 	// Keycloak
-	KeycloakBaseURL      string `env:"KEYCLOAK_BASE_URL" envDefault:"http://localhost:8081"`
+	KeycloakBaseURL      string `env:"KEYCLOAK_BASE_URL" envDefault:"http://localhost:8088"`
 	KeycloakRealm        string `env:"KEYCLOAK_REALM" envDefault:"myrealm"`
 	KeycloakClientID     string `env:"KEYCLOAK_CLIENT_ID" envDefault:"myclient"`
 	KeycloakClientSecret string `env:"KEYCLOAK_CLIENT_SECRET" envDefault:"mysecret"`

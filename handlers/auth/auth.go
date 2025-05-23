@@ -19,6 +19,9 @@ type AuthHandler interface {
 	// UpdateSession generates new tokens using a refresh token
 	UpdateSession(e echo.Context) error
 
+	// FinishSession revokes user tokens and ends the session
+	FinishSession(e echo.Context) error
+
 	// GetUser ...
 	GetUser(e echo.Context) error
 }
@@ -112,6 +115,34 @@ func (h *authHandler) UpdateSession(e echo.Context) error {
 	}
 
 	return e.JSON(http.StatusOK, accessTokens)
+}
+
+// Finish session revoke user tokens
+//
+//	@Summary		Logout and revoke user tokens
+//	@Description	Revoke user tokens and end session
+//	@Tags			authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		authmodel.FinishSessionRequest	true	"Refresh token"
+//	@Success		200 	{object}	authmodel.FinishSessionResponse		"Success response"
+//	@Failure		400		{string}	string	"Invalid request"
+//	@Failure		401		{string}	string	"Unauthorized"
+//	@Failure		500		{string}	string	"Internal server error"
+//	@Router			/auth/logout [post]
+func (h *authHandler) FinishSession(e echo.Context) error {
+	var req authmodel.FinishSessionRequest
+	if err := e.Bind(&req); err != nil {
+		return e.JSON(http.StatusBadRequest, "Invalid request format")
+	}
+	ctx := e.Request().Context()
+
+	res, err := h.authService.FinishSession(ctx, req)
+	if err != nil {
+		h.logger.Error("Failed to revoke token", zap.Error(err))
+		return e.JSON(http.StatusBadRequest, "Invalid refresh token")
+	}
+	return e.JSON(http.StatusOK, res)
 }
 
 // GetUser returns authenticated user information

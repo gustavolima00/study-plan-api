@@ -98,6 +98,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Revoke user tokens and end session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Logout and revoke user tokens",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.FinishSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "schema": {
+                            "$ref": "#/definitions/auth.FinishSessionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh": {
             "post": {
                 "description": "Generate new access token using refresh token",
@@ -215,6 +267,20 @@ const docTemplate = `{
                 }
             }
         },
+        "auth.FinishSessionRequest": {
+            "type": "object",
+            "required": [
+                "access_token"
+            ],
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.FinishSessionResponse": {
+            "type": "object"
+        },
         "auth.ResourceAccess": {
             "type": "object",
             "properties": {
@@ -230,9 +296,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "expires_in": {
-                    "type": "integer"
-                },
-                "not_before_policy": {
                     "type": "integer"
                 },
                 "refresh_expires_in": {

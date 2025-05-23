@@ -25,7 +25,7 @@ mock:
 
 # Keycloak commands
 KEYCLOAK_IMAGE ?= quay.io/keycloak/keycloak:26.2.4
-KEYCLOAK_PORT ?= 8081
+KEYCLOAK_PORT ?= 8088
 KEYCLOAK_ADMIN_USERNAME ?= admin
 KEYCLOAK_ADMIN_PASSWORD ?= admin
 KEYCLOAK_REALM ?= myrealm

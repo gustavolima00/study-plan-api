@@ -10,6 +10,17 @@ type GetOIDCTokenRequest struct {
 	RefreshToken string `url:"refresh_token,omitempty"`
 }
 
+type RevokeOIDCTokenRequest struct {
+	Token        string `url:"token"`
+	ClientID     string `url:"client_id"`
+	ClientSecret string `url:"client_secret,omitempty"`
+}
+
+type RevokeOIDCTokenResponse struct {
+	Error            string `json:"error,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
+}
+
 type IntrospectOIDCTokenRequest struct {
 	AccessToken string `url:"token"`
 }

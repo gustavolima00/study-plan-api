@@ -17,6 +17,15 @@ definitions:
     - password
     - username
     type: object
+  auth.FinishSessionRequest:
+    properties:
+      access_token:
+        type: string
+    required:
+    - access_token
+    type: object
+  auth.FinishSessionResponse:
+    type: object
   auth.ResourceAccess:
     properties:
       account:
@@ -27,8 +36,6 @@ definitions:
       access_token:
         type: string
       expires_in:
-        type: integer
-      not_before_policy:
         type: integer
       refresh_expires_in:
         type: integer
@@ -131,6 +138,40 @@ paths:
           schema:
             type: string
       summary: User login
+      tags:
+      - authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revoke user tokens and end session
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.FinishSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response
+          schema:
+            $ref: '#/definitions/auth.FinishSessionResponse'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Logout and revoke user tokens
       tags:
       - authentication
   /auth/refresh:

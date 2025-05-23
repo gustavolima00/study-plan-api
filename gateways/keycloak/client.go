@@ -20,12 +20,14 @@ import (
 const (
 	_GET_OIDC_TOKEN_PATH        = "realms/%s/protocol/openid-connect/token"
 	_INTROSPECT_OIDC_TOKEN_PATH = "realms/%s/protocol/openid-connect/token/introspect"
+	_REVOKE_OIDC_TOKEN_PATH     = "realms/%s/protocol/openid-connect/revoke"
 
 	_FORM_ENCODED = "application/x-www-form-urlencoded"
 )
 
 type KeycloakClient interface {
 	GetOIDCToken(ctx context.Context, request models.GetOIDCTokenRequest) (*models.GetOIDCTokenResponse, error)
+	RevokeOIDCToken(ctx context.Context, request models.RevokeOIDCTokenRequest) error
 	IntrospectOIDCToken(ctx context.Context, request models.IntrospectOIDCTokenRequest) (*models.IntrospectOIDCTokenResponse, error)
 }
 
@@ -83,6 +85,39 @@ func (c *keycloakClient) GetOIDCToken(ctx context.Context, request models.GetOID
 		return nil, err
 	}
 	return response, nil
+}
+
+func (c *keycloakClient) RevokeOIDCToken(ctx context.Context, request models.RevokeOIDCTokenRequest) error {
+	if request.ClientID == "" {
+		request.ClientID = c.config.KeycloakClientID
+	}
+	if request.ClientSecret == "" {
+		request.ClientSecret = c.config.KeycloakClientSecret
+	}
+
+	path := fmt.Sprintf(_REVOKE_OIDC_TOKEN_PATH, c.config.KeycloakRealm)
+	body, err := buildFormEncodedBody(request)
+	if err != nil {
+		c.logger.Debug("failed to build form encoded body", zap.Error(err))
+		return err
+	}
+	params := requestParams{
+		HTTPClient:  c.httpClient,
+		BaseURL:     c.config.KeycloakBaseURL,
+		Path:        path,
+		ContentType: _FORM_ENCODED,
+		Method:      http.MethodPost,
+		Body:        body,
+	}
+
+	res, err := makeRequest[models.RevokeOIDCTokenResponse](params)
+	c.logger.Debug("revoke oidc token response", zap.Any("response", res))
+
+	if err != nil {
+		c.logger.Debug("failed to make request", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 func (c *keycloakClient) IntrospectOIDCToken(ctx context.Context, request models.IntrospectOIDCTokenRequest) (*models.IntrospectOIDCTokenResponse, error) {
@@ -160,8 +195,14 @@ func makeRequest[T any](p requestParams) (*T, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to request: %s", resp.Status)
+		errorBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("request failed with status %d: %s", resp.StatusCode, string(errorBody))
 	}
+
+	if resp.ContentLength == 0 {
+		return nil, nil
+	}
+
 	var response T
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err

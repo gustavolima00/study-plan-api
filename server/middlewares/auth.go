@@ -23,7 +23,7 @@ func (m middlewares) AuthMiddleware() echo.MiddlewareFunc {
 			}
 
 			// Verificar o token no Keycloak
-			userInfo, err := m.authService.AuthenticateUser(c.Request().Context(), authmodel.VerifySessionRequest{
+			userInfo, err := m.authService.GetUserInfo(c.Request().Context(), authmodel.VerifySessionRequest{
 				AccessToken: token,
 			})
 			if err != nil {
