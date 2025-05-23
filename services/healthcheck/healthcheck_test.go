@@ -13,7 +13,7 @@ func TestSetOnlineSince(t *testing.T) {
 
 	// Test if the onlineSince is nil
 	_, err := s.OnlineSince()
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	// Test if the onlineSince is set
 	s.SetOnlineSince(time.Now())

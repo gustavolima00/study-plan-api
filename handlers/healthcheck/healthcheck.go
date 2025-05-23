@@ -1,13 +1,12 @@
 package healthcheck
 
 import (
+	hcmodel "go-api/models/healthcheck"
+	hcservice "go-api/services/healthcheck"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
-
-	hcmodel "go-api/models/healthcheck"
-	hcservice "go-api/services/healthcheck"
 )
 
 // Handler defines the interface for healthcheck API handlers

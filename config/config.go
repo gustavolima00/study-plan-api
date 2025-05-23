@@ -8,8 +8,14 @@ import (
 
 // Config defines the application env vars
 type Config struct {
-	ConnStr string `env:"CONN_STR" envDefault:""`
-	Port    string `env:"PORT" envDefault:"8080"`
+	Port string `env:"PORT" envDefault:"8080"`
+
+	// Keycloak
+	KeycloakBaseURL      string `env:"KEYCLOAK_BASE_URL" envDefault:"http://localhost:8081"`
+	KeycloakRealm        string `env:"KEYCLOAK_REALM" envDefault:"myrealm"`
+	KeycloakClientID     string `env:"KEYCLOAK_CLIENT_ID" envDefault:"myclient"`
+	KeycloakClientSecret string `env:"KEYCLOAK_CLIENT_SECRET" envDefault:"mysecret"`
+	KeycloakTimoutMS     int    `env:"KEYCLOAK_TIMEOUT_MS" envDefault:"10000"`
 }
 
 // NewConfig will parse the necessary env vars to

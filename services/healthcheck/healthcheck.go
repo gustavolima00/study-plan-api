@@ -29,7 +29,10 @@ type service struct {
 
 // New returns an implementation of Healthcheck interface
 func New(p Params) Service {
-	return &service{}
+	now := time.Now()
+	return &service{
+		onlineSince: &now,
+	}
 }
 
 func (s *service) SetOnlineSince(t time.Time) {
