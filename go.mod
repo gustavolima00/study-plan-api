@@ -5,21 +5,16 @@ go 1.23.6
 require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/google/go-querystring v1.1.0
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.13.3
+	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.4
 	go.uber.org/fx v1.23.0
 )
 
-require (
-	github.com/golang-migrate/migrate/v4 v4.18.3 // indirect
-	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/jmoiron/sqlx v1.4.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-)
+require github.com/rogpeppe/go-internal v1.12.0 // indirect
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

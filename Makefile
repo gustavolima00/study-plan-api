@@ -32,6 +32,7 @@ POSTGRES_PORT ?= 5432
 POSTGRES_USER ?= myuser
 POSTGRES_PASSWORD ?= mypassword
 POSTGRES_DB ?= mydb
+KEYCLOAK_DB ?= keycloak_db
 
 postgres:
 	@echo "Starting PostgreSQL with configuration:"
@@ -40,7 +41,8 @@ postgres:
 	@echo "Port: $(POSTGRES_PORT)"
 	@echo "Username: $(POSTGRES_USER)"
 	@echo "Password: $(POSTGRES_PASSWORD)"
-	@echo "Database: $(POSTGRES_DB)"
+	@echo "Application Database: $(POSTGRES_DB)"
+	@echo "Keycloak Database: $(KEYCLOAK_DB)"
 	@echo "-------------------------------------"
 	
 	docker run -d --name postgres \
@@ -48,8 +50,10 @@ postgres:
 		-e POSTGRES_USER=$(POSTGRES_USER) \
 		-e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
 		-e POSTGRES_DB=$(POSTGRES_DB) \
+		-e POSTGRES_MULTIPLE_DATABASES="$(POSTGRES_DB),$(KEYCLOAK_DB)" \
 		-v postgres_data:/var/lib/postgresql/data \
 		-v $(PWD)/migrations:/migrations \
+		-v $(PWD)/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
 		$(POSTGRES_IMAGE)
 
 postgres-stop:
@@ -75,6 +79,7 @@ keycloak:
 	@echo "Realm: $(KEYCLOAK_REALM)"
 	@echo "Client ID: $(KEYCLOAK_CLIENT_ID)"
 	@echo "Client Secret: $(KEYCLOAK_CLIENT_SECRET)"
+	@echo "Database: $(KEYCLOAK_DB)"
 	@echo "-----------------------------------"
 
 	docker run -d --name keycloak \
@@ -82,7 +87,7 @@ keycloak:
 		-e KEYCLOAK_ADMIN=$(KEYCLOAK_ADMIN_USERNAME) \
 		-e KEYCLOAK_ADMIN_PASSWORD=$(KEYCLOAK_ADMIN_PASSWORD) \
 		-e KC_DB=postgres \
-		-e KC_DB_URL=jdbc:postgresql://postgres:5432/$(POSTGRES_DB) \
+		-e KC_DB_URL=jdbc:postgresql://postgres:5432/$(KEYCLOAK_DB) \
 		-e KC_DB_USERNAME=$(POSTGRES_USER) \
 		-e KC_DB_PASSWORD=$(POSTGRES_PASSWORD) \
 		-e KC_HOSTNAME=localhost \
@@ -94,7 +99,14 @@ keycloak-stop:
 	docker stop keycloak || true
 	docker rm keycloak || true
 
+# Keycloak configuration with retry logic
 keycloak-configure:
+	@echo "Waiting for Keycloak to be ready..."
+	@until docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user $(KEYCLOAK_ADMIN_USERNAME) --password $(KEYCLOAK_ADMIN_PASSWORD) >/dev/null; do \
+		echo "Keycloak not ready yet - retrying in 5 seconds..."; \
+		sleep 5; \
+	done
+	
 	@echo "Configuring Keycloak..."
 	docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user $(KEYCLOAK_ADMIN_USERNAME) --password $(KEYCLOAK_ADMIN_PASSWORD)
 	docker exec keycloak /opt/keycloak/bin/kcadm.sh create realms -s realm=$(KEYCLOAK_REALM) -s enabled=true
@@ -124,7 +136,7 @@ migrate-force:
 	migrate -path migrations -database "${POSTGRES_CONNECTION_STRING}" force ${version}
 
 # Combined commands
-setup: postgres keycloak migrate-up keycloak-configure
+setup: deps postgres keycloak migrate-up keycloak-configure 
 	@echo "All services are up and configured!"
 
 teardown: keycloak-stop postgres-stop
