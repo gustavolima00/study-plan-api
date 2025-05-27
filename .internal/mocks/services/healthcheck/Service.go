@@ -21,6 +21,51 @@ func (_m *Service) EXPECT() *Service_Expecter {
 	return &Service_Expecter{mock: &_m.Mock}
 }
 
+// IsPostgresRunning provides a mock function with no fields
+func (_m *Service) IsPostgresRunning() bool {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsPostgresRunning")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// Service_IsPostgresRunning_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsPostgresRunning'
+type Service_IsPostgresRunning_Call struct {
+	*mock.Call
+}
+
+// IsPostgresRunning is a helper method to define mock.On call
+func (_e *Service_Expecter) IsPostgresRunning() *Service_IsPostgresRunning_Call {
+	return &Service_IsPostgresRunning_Call{Call: _e.mock.On("IsPostgresRunning")}
+}
+
+func (_c *Service_IsPostgresRunning_Call) Run(run func()) *Service_IsPostgresRunning_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *Service_IsPostgresRunning_Call) Return(_a0 bool) *Service_IsPostgresRunning_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Service_IsPostgresRunning_Call) RunAndReturn(run func() bool) *Service_IsPostgresRunning_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // OnlineSince provides a mock function with no fields
 func (_m *Service) OnlineSince() (time.Duration, error) {
 	ret := _m.Called()

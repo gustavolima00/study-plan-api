@@ -55,7 +55,8 @@ func (h *handler) GetAPIStatus(e echo.Context) error {
 	}
 
 	status := hcmodel.Status{
-		OnlineTime: onlineTime.String(),
+		OnlineTime:        onlineTime.String(),
+		IsPostgresRunning: h.hcService.IsPostgresRunning(),
 	}
 
 	return e.JSON(http.StatusOK, status)

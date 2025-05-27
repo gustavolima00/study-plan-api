@@ -23,12 +23,12 @@ func (_m *KeycloakGateway) EXPECT() *KeycloakGateway_Expecter {
 	return &KeycloakGateway_Expecter{mock: &_m.Mock}
 }
 
-// Login provides a mock function with given fields: ctx, username, password
-func (_m *KeycloakGateway) Login(ctx context.Context, username string, password string) (*keycloak.GetOIDCTokenResponse, error) {
+// GetOIDCToken provides a mock function with given fields: ctx, username, password
+func (_m *KeycloakGateway) GetOIDCToken(ctx context.Context, username string, password string) (*keycloak.GetOIDCTokenResponse, error) {
 	ret := _m.Called(ctx, username, password)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Login")
+		panic("no return value specified for GetOIDCToken")
 	}
 
 	var r0 *keycloak.GetOIDCTokenResponse
@@ -53,101 +53,42 @@ func (_m *KeycloakGateway) Login(ctx context.Context, username string, password 
 	return r0, r1
 }
 
-// KeycloakGateway_Login_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Login'
-type KeycloakGateway_Login_Call struct {
+// KeycloakGateway_GetOIDCToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetOIDCToken'
+type KeycloakGateway_GetOIDCToken_Call struct {
 	*mock.Call
 }
 
-// Login is a helper method to define mock.On call
+// GetOIDCToken is a helper method to define mock.On call
 //   - ctx context.Context
 //   - username string
 //   - password string
-func (_e *KeycloakGateway_Expecter) Login(ctx interface{}, username interface{}, password interface{}) *KeycloakGateway_Login_Call {
-	return &KeycloakGateway_Login_Call{Call: _e.mock.On("Login", ctx, username, password)}
+func (_e *KeycloakGateway_Expecter) GetOIDCToken(ctx interface{}, username interface{}, password interface{}) *KeycloakGateway_GetOIDCToken_Call {
+	return &KeycloakGateway_GetOIDCToken_Call{Call: _e.mock.On("GetOIDCToken", ctx, username, password)}
 }
 
-func (_c *KeycloakGateway_Login_Call) Run(run func(ctx context.Context, username string, password string)) *KeycloakGateway_Login_Call {
+func (_c *KeycloakGateway_GetOIDCToken_Call) Run(run func(ctx context.Context, username string, password string)) *KeycloakGateway_GetOIDCToken_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *KeycloakGateway_Login_Call) Return(_a0 *keycloak.GetOIDCTokenResponse, _a1 error) *KeycloakGateway_Login_Call {
+func (_c *KeycloakGateway_GetOIDCToken_Call) Return(_a0 *keycloak.GetOIDCTokenResponse, _a1 error) *KeycloakGateway_GetOIDCToken_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *KeycloakGateway_Login_Call) RunAndReturn(run func(context.Context, string, string) (*keycloak.GetOIDCTokenResponse, error)) *KeycloakGateway_Login_Call {
+func (_c *KeycloakGateway_GetOIDCToken_Call) RunAndReturn(run func(context.Context, string, string) (*keycloak.GetOIDCTokenResponse, error)) *KeycloakGateway_GetOIDCToken_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Refresh provides a mock function with given fields: ctx, refreshToken
-func (_m *KeycloakGateway) Refresh(ctx context.Context, refreshToken string) (*keycloak.GetOIDCTokenResponse, error) {
-	ret := _m.Called(ctx, refreshToken)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Refresh")
-	}
-
-	var r0 *keycloak.GetOIDCTokenResponse
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*keycloak.GetOIDCTokenResponse, error)); ok {
-		return rf(ctx, refreshToken)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *keycloak.GetOIDCTokenResponse); ok {
-		r0 = rf(ctx, refreshToken)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*keycloak.GetOIDCTokenResponse)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, refreshToken)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// KeycloakGateway_Refresh_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Refresh'
-type KeycloakGateway_Refresh_Call struct {
-	*mock.Call
-}
-
-// Refresh is a helper method to define mock.On call
-//   - ctx context.Context
-//   - refreshToken string
-func (_e *KeycloakGateway_Expecter) Refresh(ctx interface{}, refreshToken interface{}) *KeycloakGateway_Refresh_Call {
-	return &KeycloakGateway_Refresh_Call{Call: _e.mock.On("Refresh", ctx, refreshToken)}
-}
-
-func (_c *KeycloakGateway_Refresh_Call) Run(run func(ctx context.Context, refreshToken string)) *KeycloakGateway_Refresh_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
-	})
-	return _c
-}
-
-func (_c *KeycloakGateway_Refresh_Call) Return(_a0 *keycloak.GetOIDCTokenResponse, _a1 error) *KeycloakGateway_Refresh_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *KeycloakGateway_Refresh_Call) RunAndReturn(run func(context.Context, string) (*keycloak.GetOIDCTokenResponse, error)) *KeycloakGateway_Refresh_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// VerifyToken provides a mock function with given fields: ctx, accessToken
-func (_m *KeycloakGateway) VerifyToken(ctx context.Context, accessToken string) (*keycloak.IntrospectOIDCTokenResponse, error) {
+// IntrospectOIDCToken provides a mock function with given fields: ctx, accessToken
+func (_m *KeycloakGateway) IntrospectOIDCToken(ctx context.Context, accessToken string) (*keycloak.IntrospectOIDCTokenResponse, error) {
 	ret := _m.Called(ctx, accessToken)
 
 	if len(ret) == 0 {
-		panic("no return value specified for VerifyToken")
+		panic("no return value specified for IntrospectOIDCToken")
 	}
 
 	var r0 *keycloak.IntrospectOIDCTokenResponse
@@ -172,31 +113,137 @@ func (_m *KeycloakGateway) VerifyToken(ctx context.Context, accessToken string) 
 	return r0, r1
 }
 
-// KeycloakGateway_VerifyToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'VerifyToken'
-type KeycloakGateway_VerifyToken_Call struct {
+// KeycloakGateway_IntrospectOIDCToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IntrospectOIDCToken'
+type KeycloakGateway_IntrospectOIDCToken_Call struct {
 	*mock.Call
 }
 
-// VerifyToken is a helper method to define mock.On call
+// IntrospectOIDCToken is a helper method to define mock.On call
 //   - ctx context.Context
 //   - accessToken string
-func (_e *KeycloakGateway_Expecter) VerifyToken(ctx interface{}, accessToken interface{}) *KeycloakGateway_VerifyToken_Call {
-	return &KeycloakGateway_VerifyToken_Call{Call: _e.mock.On("VerifyToken", ctx, accessToken)}
+func (_e *KeycloakGateway_Expecter) IntrospectOIDCToken(ctx interface{}, accessToken interface{}) *KeycloakGateway_IntrospectOIDCToken_Call {
+	return &KeycloakGateway_IntrospectOIDCToken_Call{Call: _e.mock.On("IntrospectOIDCToken", ctx, accessToken)}
 }
 
-func (_c *KeycloakGateway_VerifyToken_Call) Run(run func(ctx context.Context, accessToken string)) *KeycloakGateway_VerifyToken_Call {
+func (_c *KeycloakGateway_IntrospectOIDCToken_Call) Run(run func(ctx context.Context, accessToken string)) *KeycloakGateway_IntrospectOIDCToken_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *KeycloakGateway_VerifyToken_Call) Return(_a0 *keycloak.IntrospectOIDCTokenResponse, _a1 error) *KeycloakGateway_VerifyToken_Call {
+func (_c *KeycloakGateway_IntrospectOIDCToken_Call) Return(_a0 *keycloak.IntrospectOIDCTokenResponse, _a1 error) *KeycloakGateway_IntrospectOIDCToken_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *KeycloakGateway_VerifyToken_Call) RunAndReturn(run func(context.Context, string) (*keycloak.IntrospectOIDCTokenResponse, error)) *KeycloakGateway_VerifyToken_Call {
+func (_c *KeycloakGateway_IntrospectOIDCToken_Call) RunAndReturn(run func(context.Context, string) (*keycloak.IntrospectOIDCTokenResponse, error)) *KeycloakGateway_IntrospectOIDCToken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RefreshOIDCToken provides a mock function with given fields: ctx, refreshToken
+func (_m *KeycloakGateway) RefreshOIDCToken(ctx context.Context, refreshToken string) (*keycloak.GetOIDCTokenResponse, error) {
+	ret := _m.Called(ctx, refreshToken)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RefreshOIDCToken")
+	}
+
+	var r0 *keycloak.GetOIDCTokenResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*keycloak.GetOIDCTokenResponse, error)); ok {
+		return rf(ctx, refreshToken)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *keycloak.GetOIDCTokenResponse); ok {
+		r0 = rf(ctx, refreshToken)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*keycloak.GetOIDCTokenResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, refreshToken)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// KeycloakGateway_RefreshOIDCToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RefreshOIDCToken'
+type KeycloakGateway_RefreshOIDCToken_Call struct {
+	*mock.Call
+}
+
+// RefreshOIDCToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - refreshToken string
+func (_e *KeycloakGateway_Expecter) RefreshOIDCToken(ctx interface{}, refreshToken interface{}) *KeycloakGateway_RefreshOIDCToken_Call {
+	return &KeycloakGateway_RefreshOIDCToken_Call{Call: _e.mock.On("RefreshOIDCToken", ctx, refreshToken)}
+}
+
+func (_c *KeycloakGateway_RefreshOIDCToken_Call) Run(run func(ctx context.Context, refreshToken string)) *KeycloakGateway_RefreshOIDCToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *KeycloakGateway_RefreshOIDCToken_Call) Return(_a0 *keycloak.GetOIDCTokenResponse, _a1 error) *KeycloakGateway_RefreshOIDCToken_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *KeycloakGateway_RefreshOIDCToken_Call) RunAndReturn(run func(context.Context, string) (*keycloak.GetOIDCTokenResponse, error)) *KeycloakGateway_RefreshOIDCToken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RevokeOIDCToken provides a mock function with given fields: ctx, refreshToken
+func (_m *KeycloakGateway) RevokeOIDCToken(ctx context.Context, refreshToken string) error {
+	ret := _m.Called(ctx, refreshToken)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RevokeOIDCToken")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, refreshToken)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// KeycloakGateway_RevokeOIDCToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RevokeOIDCToken'
+type KeycloakGateway_RevokeOIDCToken_Call struct {
+	*mock.Call
+}
+
+// RevokeOIDCToken is a helper method to define mock.On call
+//   - ctx context.Context
+//   - refreshToken string
+func (_e *KeycloakGateway_Expecter) RevokeOIDCToken(ctx interface{}, refreshToken interface{}) *KeycloakGateway_RevokeOIDCToken_Call {
+	return &KeycloakGateway_RevokeOIDCToken_Call{Call: _e.mock.On("RevokeOIDCToken", ctx, refreshToken)}
+}
+
+func (_c *KeycloakGateway_RevokeOIDCToken_Call) Run(run func(ctx context.Context, refreshToken string)) *KeycloakGateway_RevokeOIDCToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *KeycloakGateway_RevokeOIDCToken_Call) Return(_a0 error) *KeycloakGateway_RevokeOIDCToken_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *KeycloakGateway_RevokeOIDCToken_Call) RunAndReturn(run func(context.Context, string) error) *KeycloakGateway_RevokeOIDCToken_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	mockhealthcheck "go-api/.internal/mocks/services/healthcheck"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,8 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-
-	mockhealthcheck "go-api/.internal/mocks/services/healthcheck"
 )
 
 // HandlerTestSuite ...

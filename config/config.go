@@ -16,6 +16,14 @@ type Config struct {
 	KeycloakClientID     string `env:"KEYCLOAK_CLIENT_ID" envDefault:"myclient"`
 	KeycloakClientSecret string `env:"KEYCLOAK_CLIENT_SECRET" envDefault:"mysecret"`
 	KeycloakTimoutMS     int    `env:"KEYCLOAK_TIMEOUT_MS" envDefault:"10000"`
+
+	// Database
+	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING" envDefault:"postgres://user:password@localhost:5432/mydb?sslmode=disable"`
+	PostgresMaxOpenConns     int    `env:"POSTGRES_MAX_OPEN_CONNS" envDefault:"10"`
+	PostgresMaxIdleConns     int    `env:"POSTGRES_MAX_IDLE_CONNS" envDefault:"10"`
+	PostgresConnMaxLifetime  int    `env:"POSTGRES_CONN_MAX_LIFETIME" envDefault:"300"` // in seconds
+	PostgresMaxIdleTime      int    `env:"POSTGRES_MAX_IDLE_TIME" envDefault:"300"`     // in seconds
+	PostgresMaxLifetime      int    `env:"POSTGRES_MAX_LIFETIME" envDefault:"300"`      // in seconds
 }
 
 // NewConfig will parse the necessary env vars to

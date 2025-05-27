@@ -66,6 +66,52 @@ func (_c *AuthHandler_CreateSession_Call) RunAndReturn(run func(echo.Context) er
 	return _c
 }
 
+// FinishSession provides a mock function with given fields: e
+func (_m *AuthHandler) FinishSession(e echo.Context) error {
+	ret := _m.Called(e)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FinishSession")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(echo.Context) error); ok {
+		r0 = rf(e)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// AuthHandler_FinishSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FinishSession'
+type AuthHandler_FinishSession_Call struct {
+	*mock.Call
+}
+
+// FinishSession is a helper method to define mock.On call
+//   - e echo.Context
+func (_e *AuthHandler_Expecter) FinishSession(e interface{}) *AuthHandler_FinishSession_Call {
+	return &AuthHandler_FinishSession_Call{Call: _e.mock.On("FinishSession", e)}
+}
+
+func (_c *AuthHandler_FinishSession_Call) Run(run func(e echo.Context)) *AuthHandler_FinishSession_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(echo.Context))
+	})
+	return _c
+}
+
+func (_c *AuthHandler_FinishSession_Call) Return(_a0 error) *AuthHandler_FinishSession_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *AuthHandler_FinishSession_Call) RunAndReturn(run func(echo.Context) error) *AuthHandler_FinishSession_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetUser provides a mock function with given fields: e
 func (_m *AuthHandler) GetUser(e echo.Context) error {
 	ret := _m.Called(e)
