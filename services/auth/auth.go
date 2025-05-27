@@ -64,7 +64,7 @@ func (s *authService) UpdateSession(ctx context.Context, request model.UpdateSes
 }
 
 func (s *authService) FinishSession(ctx context.Context, request model.FinishSessionRequest) (*model.FinishSessionResponse, error) {
-	err := s.keycloakGateway.RevokeOIDCToken(ctx, request.RefreshToken)
+	err := s.keycloakGateway.RevokeOIDCToken(ctx, request.AccessToken)
 	if err != nil {
 		return nil, err
 	}

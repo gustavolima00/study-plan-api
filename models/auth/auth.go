@@ -10,7 +10,7 @@ type UpdateSessionRequest struct {
 }
 
 type FinishSessionRequest struct {
-	RefreshToken string `json:"access_token" validate:"required"`
+	AccessToken string `json:"access_token" validate:"required"`
 }
 
 type FinishSessionResponse struct{}
