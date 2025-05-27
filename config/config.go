@@ -18,7 +18,7 @@ type Config struct {
 	KeycloakTimoutMS     int    `env:"KEYCLOAK_TIMEOUT_MS" envDefault:"10000"`
 
 	// Database
-	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING" envDefault:"postgres://user:password@localhost:5432/mydb?sslmode=disable"`
+	PostgresConnectionString string `env:"POSTGRES_CONNECTION_STRING" envDefault:"postgres://myuser:mypassword@localhost:5432/mydb?sslmode=disable"`
 	PostgresMaxOpenConns     int    `env:"POSTGRES_MAX_OPEN_CONNS" envDefault:"10"`
 	PostgresMaxIdleConns     int    `env:"POSTGRES_MAX_IDLE_CONNS" envDefault:"10"`
 	PostgresConnMaxLifetime  int    `env:"POSTGRES_CONN_MAX_LIFETIME" envDefault:"300"` // in seconds

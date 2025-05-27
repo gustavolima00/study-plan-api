@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -60,6 +61,6 @@ func (c *postgresClient) NewConnection() (*sqlx.DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	logger.Debug("PostgreSQL connection settings")
+	logger.Debug("Database connection established")
 	return db, nil
 }

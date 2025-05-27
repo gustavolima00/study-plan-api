@@ -1,4 +1,7 @@
-.PHONY: all deps run test swag-install swag mockery-install mock keycloak
+.PHONY: all deps run test swag-install swag mockery-install mock \
+        postgres postgres-stop \
+        keycloak keycloak-stop keycloak-configure \
+        migrate-install migrate-create migrate-up migrate-down migrate-force
 
 all: deps run
 
@@ -22,6 +25,36 @@ mockery-install:
 
 mock:
 	mockery
+
+# PostgreSQL commands
+POSTGRES_IMAGE ?= postgres:15-alpine
+POSTGRES_PORT ?= 5432
+POSTGRES_USER ?= myuser
+POSTGRES_PASSWORD ?= mypassword
+POSTGRES_DB ?= mydb
+
+postgres:
+	@echo "Starting PostgreSQL with configuration:"
+	@echo "-------------------------------------"
+	@echo "Image: $(POSTGRES_IMAGE)"
+	@echo "Port: $(POSTGRES_PORT)"
+	@echo "Username: $(POSTGRES_USER)"
+	@echo "Password: $(POSTGRES_PASSWORD)"
+	@echo "Database: $(POSTGRES_DB)"
+	@echo "-------------------------------------"
+	
+	docker run -d --name postgres \
+		-p $(POSTGRES_PORT):5432 \
+		-e POSTGRES_USER=$(POSTGRES_USER) \
+		-e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+		-e POSTGRES_DB=$(POSTGRES_DB) \
+		-v postgres_data:/var/lib/postgresql/data \
+		-v $(PWD)/migrations:/migrations \
+		$(POSTGRES_IMAGE)
+
+postgres-stop:
+	docker stop postgres || true
+	docker rm postgres || true
 
 # Keycloak commands
 KEYCLOAK_IMAGE ?= quay.io/keycloak/keycloak:26.2.4
@@ -48,7 +81,12 @@ keycloak:
 		-p $(KEYCLOAK_PORT):8080 \
 		-e KEYCLOAK_ADMIN=$(KEYCLOAK_ADMIN_USERNAME) \
 		-e KEYCLOAK_ADMIN_PASSWORD=$(KEYCLOAK_ADMIN_PASSWORD) \
+		-e KC_DB=postgres \
+		-e KC_DB_URL=jdbc:postgresql://postgres:5432/$(POSTGRES_DB) \
+		-e KC_DB_USERNAME=$(POSTGRES_USER) \
+		-e KC_DB_PASSWORD=$(POSTGRES_PASSWORD) \
 		-e KC_HOSTNAME=localhost \
+		--link postgres:postgres \
 		$(KEYCLOAK_IMAGE) \
 		start-dev
 
@@ -66,3 +104,28 @@ keycloak-configure:
 	@echo "Access the admin console at: http://localhost:$(KEYCLOAK_PORT)/admin"
 	@echo "Username: $(KEYCLOAK_ADMIN_USERNAME)"
 	@echo "Password: $(KEYCLOAK_ADMIN_PASSWORD)"
+
+# Database migration commands
+POSTGRES_CONNECTION_STRING ?= postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
+
+migrate-install:
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+migrate-create:
+	migrate create -ext sql -dir migrations -seq ${name}
+
+migrate-up:
+	migrate -path migrations -database "${POSTGRES_CONNECTION_STRING}" up
+
+migrate-down:
+	migrate -path migrations -database "${POSTGRES_CONNECTION_STRING}" down
+
+migrate-force:
+	migrate -path migrations -database "${POSTGRES_CONNECTION_STRING}" force ${version}
+
+# Combined commands
+setup: postgres keycloak migrate-up keycloak-configure
+	@echo "All services are up and configured!"
+
+teardown: keycloak-stop postgres-stop
+	@echo "All services are down!"
