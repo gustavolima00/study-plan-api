@@ -82,6 +82,7 @@ func (s *authService) GetUserInfo(ctx context.Context, request model.VerifySessi
 	}
 
 	return &model.UserInfo{
+		UUID:              res.Sub,
 		Username:          res.Username,
 		Email:             res.Email,
 		EmailVerified:     res.EmailVerified,

@@ -38,6 +38,7 @@ type ResourceAccess struct {
 }
 
 type UserInfo struct {
+	UUID              string         `json:"uuid"`
 	Username          string         `json:"username"`
 	Email             string         `json:"email"`
 	EmailVerified     bool           `json:"email_verified"`
