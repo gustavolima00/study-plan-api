@@ -1,8 +1,8 @@
 package healthcheck
 
 import (
-	hcmodel "go-api/models/healthcheck"
-	hcservice "go-api/services/healthcheck"
+	hcmodel "go-api/src/models/healthcheck"
+	hcservice "go-api/src/services/healthcheck"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

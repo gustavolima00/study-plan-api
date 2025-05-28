@@ -2,12 +2,11 @@ package server
 
 import (
 	"context"
+	"go-api/config"
 	"log"
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
-
-	"go-api/config"
 )
 
 // Params defines the dependencies that the server module needs

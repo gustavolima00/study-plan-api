@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"go-api/config"
-	"go-api/gateways"
-	"go-api/handlers"
 	"go-api/server"
-	"go-api/services"
+	"go-api/src/gateways"
+	"go-api/src/handlers"
+	"go-api/src/services"
 	"log"
 	"time"
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-api/config"
-	models "go-api/models/keycloak"
+	models "go-api/src/models/keycloak"
 	"net/http"
 	"net/http/httptest"
 	"testing"

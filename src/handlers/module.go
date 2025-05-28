@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"go-api/handlers/auth"
-	"go-api/handlers/healthcheck"
+	"go-api/src/handlers/auth"
+	"go-api/src/handlers/healthcheck"
 
 	"go.uber.org/fx"
 )

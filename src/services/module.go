@@ -1,8 +1,8 @@
 package services
 
 import (
-	"go-api/services/auth"
-	"go-api/services/healthcheck"
+	"go-api/src/services/auth"
+	"go-api/src/services/healthcheck"
 
 	"go.uber.org/fx"
 )

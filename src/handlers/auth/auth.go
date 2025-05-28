@@ -1,9 +1,9 @@
 package auth
 
 import (
-	authmodel "go-api/models/auth"
-	"go-api/models/constants"
-	authservice "go-api/services/auth"
+	authmodel "go-api/src/models/auth"
+	"go-api/src/models/constants"
+	authservice "go-api/src/services/auth"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

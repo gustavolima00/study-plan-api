@@ -2,7 +2,7 @@ package healthcheck
 
 import (
 	"errors"
-	"go-api/gateways/postgres"
+	"go-api/src/gateways/postgres"
 	"time"
 
 	"go.uber.org/fx"

@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"go-api/gateways/keycloak"
-	model "go-api/models/auth"
+	"go-api/src/gateways/keycloak"
+	model "go-api/src/models/auth"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"

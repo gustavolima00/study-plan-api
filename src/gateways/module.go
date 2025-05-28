@@ -1,8 +1,8 @@
 package gateways
 
 import (
-	"go-api/gateways/keycloak"
-	"go-api/gateways/postgres"
+	"go-api/src/gateways/keycloak"
+	"go-api/src/gateways/postgres"
 
 	"go.uber.org/fx"
 )

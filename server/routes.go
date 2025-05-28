@@ -3,9 +3,9 @@ package server
 import (
 	_ "go-api/.internal/docs"
 	// Generate automatically the swagger docs
-	"go-api/handlers/auth"
-	"go-api/handlers/healthcheck"
 	"go-api/server/middlewares"
+	"go-api/src/handlers/auth"
+	"go-api/src/handlers/healthcheck"
 
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"

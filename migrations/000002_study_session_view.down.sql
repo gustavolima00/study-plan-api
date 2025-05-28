@@ -1,0 +1,1 @@
+drop view if exists study_session_view;

@@ -2,8 +2,8 @@ package middlewares
 
 import (
 	"context"
-	authmodel "go-api/models/auth"
-	"go-api/models/constants"
+	authmodel "go-api/src/models/auth"
+	"go-api/src/models/constants"
 	"net/http"
 	"strings"
 

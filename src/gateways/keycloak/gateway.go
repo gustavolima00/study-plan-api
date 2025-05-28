@@ -2,7 +2,7 @@ package keycloak
 
 import (
 	"context"
-	models "go-api/models/keycloak"
+	models "go-api/src/models/keycloak"
 
 	"go.uber.org/fx"
 )
