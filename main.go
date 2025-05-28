@@ -6,6 +6,7 @@ import (
 	"go-api/server"
 	"go-api/src/gateways"
 	"go-api/src/handlers"
+	"go-api/src/repositories"
 	"go-api/src/services"
 	"log"
 	"time"
@@ -36,6 +37,7 @@ func main() {
 		services.Module,
 		handlers.Module,
 		gateways.Module,
+		repositories.Module,
 
 		// Logger
 		fx.Provide(zap.NewExample),

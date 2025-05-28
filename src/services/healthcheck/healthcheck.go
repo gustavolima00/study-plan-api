@@ -17,9 +17,6 @@ type Service interface {
 
 	// OnlineSince returns the time since the system was online
 	OnlineSince() (time.Duration, error)
-
-	// IsPostgresRunning returns the status of the PostgreSQL connection
-	IsPostgresRunning() bool
 }
 
 // Params defines the dependencies that the healthcheck module needs
@@ -52,18 +49,4 @@ func (s *service) OnlineSince() (time.Duration, error) {
 		return time.Duration(0), errors.New("online since is not set")
 	}
 	return time.Since(*s.onlineSince), nil
-}
-
-func (s *service) IsPostgresRunning() bool {
-	if s.postgresClient == nil {
-		return false
-	}
-
-	db, err := s.postgresClient.NewConnection()
-	if err != nil {
-		return false
-	}
-	defer db.Close()
-
-	return db != nil
 }
