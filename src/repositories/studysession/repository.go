@@ -3,29 +3,30 @@ package studysession
 import (
 	"context"
 	"embed"
+	"encoding/json"
+	"fmt"
 	"go-api/src/gateways/postgres"
 	models "go-api/src/models/database/studysession"
-	"go-api/src/repositories/util"
+	"io/fs"
+	"path/filepath"
 
 	"github.com/google/uuid"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-//go:embed sql/*.sql
+//go:embed *.sql
 var sqlFiles embed.FS
 
 const (
 	// SQL Queries
 	getUserStudySessionsQueryKey = "get_user_study_sessions"
-	getStudySessionEventsKey     = "get_study_session_events"
-	getStudySessionSubjectsKey   = "get_study_session_subjects"
+	getStudySessionQueryKey      = "get_study_session"
 )
 
 type StudySessionRepository interface {
 	GetUserStudySessions(ctx context.Context, userID uuid.UUID) ([]models.StudySession, error)
-	GetStudySessionEvents(ctx context.Context, studySessionID uuid.UUID) ([]models.SessionEvent, error)
-	GetStudySessionSubjects(ctx context.Context, studySessionID uuid.UUID) ([]models.Subject, error)
+	GetUserStudySession(ctx context.Context, sessionID uuid.UUID) (*models.StudySession, error)
 }
 
 type studySessionRepository struct {
@@ -42,7 +43,26 @@ type StudySessionRepositoryParams struct {
 }
 
 func NewStudySessionRepository(p StudySessionRepositoryParams) (StudySessionRepository, error) {
-	queries, err := util.LoadSQLQueries(sqlFiles)
+	queries := make(map[string]string)
+	err := fs.WalkDir(sqlFiles, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		queryName := filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+		content, err := fs.ReadFile(sqlFiles, path)
+		if err != nil {
+			return err
+		}
+
+		queries[queryName] = string(content)
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -52,32 +72,56 @@ func NewStudySessionRepository(p StudySessionRepositoryParams) (StudySessionRepo
 		sqlQueries: queries,
 	}, nil
 }
+
+type rawSession struct {
+	models.StudySession
+
+	EventsRaw   json.RawMessage `db:"events"`
+	SubjectsRaw json.RawMessage `db:"subjects"`
+}
+
+func mapSession(rawSession rawSession) (*models.StudySession, error) {
+	if err := json.Unmarshal(rawSession.SubjectsRaw, &rawSession.Subjects); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal subjects: %w", err)
+	}
+
+	if err := json.Unmarshal(rawSession.EventsRaw, &rawSession.Events); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal events: %w", err)
+	}
+	return &rawSession.StudySession, nil
+}
+
+func mapSessions(rawSessions []rawSession) ([]models.StudySession, error) {
+	sessions := make([]models.StudySession, len(rawSessions))
+	for i, rawSession := range rawSessions {
+		result, err := mapSession(rawSession)
+		if err != nil {
+			return nil, err
+		}
+		sessions[i] = *result
+	}
+	return sessions, nil
+}
+
 func (r *studySessionRepository) GetUserStudySessions(ctx context.Context, userID uuid.UUID) ([]models.StudySession, error) {
-	return util.DBQuery[models.StudySession](ctx, util.DBQueryParams{
-		DBConnection: r.pgclient.GetConnection(),
-		SqlQuery:     r.sqlQueries[getUserStudySessionsQueryKey],
-		Variables: map[string]any{
-			"user_id": userID.String(),
-		}},
-	)
+	var rawSessions []rawSession
+	query := r.sqlQueries[getUserStudySessionsQueryKey]
+	err := r.pgclient.QuerySelect(ctx, &rawSessions, query, userID.String())
+	if err != nil {
+		return nil, err
+	}
+	return mapSessions(rawSessions)
 }
 
-func (r *studySessionRepository) GetStudySessionEvents(ctx context.Context, studySessionID uuid.UUID) ([]models.SessionEvent, error) {
-	return util.DBQuery[models.SessionEvent](ctx, util.DBQueryParams{
-		DBConnection: r.pgclient.GetConnection(),
-		SqlQuery:     r.sqlQueries[getStudySessionEventsKey],
-		Variables: map[string]any{
-			"session_id": studySessionID.String(),
-		}},
-	)
-}
-
-func (r *studySessionRepository) GetStudySessionSubjects(ctx context.Context, studySessionID uuid.UUID) ([]models.Subject, error) {
-	return util.DBQuery[models.Subject](ctx, util.DBQueryParams{
-		DBConnection: r.pgclient.GetConnection(),
-		SqlQuery:     r.sqlQueries[getStudySessionSubjectsKey],
-		Variables: map[string]any{
-			"session_id": studySessionID.String(),
-		}},
-	)
+func (r *studySessionRepository) GetUserStudySession(ctx context.Context, sessionID uuid.UUID) (*models.StudySession, error) {
+	var rawSessions []rawSession
+	query := r.sqlQueries[getStudySessionQueryKey]
+	err := r.pgclient.QuerySelect(ctx, &rawSessions, query, sessionID.String())
+	if err != nil {
+		return nil, err
+	}
+	if len(rawSessions) == 0 {
+		return nil, nil
+	}
+	return mapSession(rawSessions[0])
 }

@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"go-api/config"
 	"time"
@@ -12,7 +13,7 @@ import (
 )
 
 type PostgresClient interface {
-	GetConnection() *sqlx.DB
+	QuerySelect(ctx context.Context, result any, sqlQuery string, args ...any) error
 }
 
 type postgresClient struct {
@@ -59,6 +60,6 @@ func NewPostgresClient(params PostgresClientParams) (PostgresClient, error) {
 	}, nil
 }
 
-func (c *postgresClient) GetConnection() *sqlx.DB {
-	return c.db
+func (c *postgresClient) QuerySelect(ctx context.Context, result interface{}, sqlQuery string, args ...any) error {
+	return c.db.SelectContext(ctx, result, sqlQuery, args...)
 }
