@@ -1,5 +1,7 @@
 package auth
 
+import "github.com/google/uuid"
+
 type CreateSessionRequest struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
@@ -38,7 +40,7 @@ type ResourceAccess struct {
 }
 
 type UserInfo struct {
-	UUID              string         `json:"uuid"`
+	ID                uuid.UUID      `json:"uuid"`
 	Username          string         `json:"username"`
 	Email             string         `json:"email"`
 	EmailVerified     bool           `json:"email_verified"`

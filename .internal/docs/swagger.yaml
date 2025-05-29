@@ -73,10 +73,19 @@ definitions:
         $ref: '#/definitions/auth.ResourceAccess'
       username:
         type: string
+      uuid:
+        type: string
     type: object
   healthcheck.Status:
     properties:
       online_time:
+        type: string
+    type: object
+  studysession.UpsertActiveStudySessionRequest:
+    properties:
+      notes:
+        type: string
+      title:
         type: string
     type: object
 info:
@@ -231,6 +240,42 @@ paths:
       summary: Get user info
       tags:
       - authentication
+  /study-session/upsert-active:
+    post:
+      consumes:
+      - application/json
+      description: Create a new study session for the authenticated user
+      parameters:
+      - description: Study session data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/studysession.UpsertActiveStudySessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session details
+          schema:
+            type: string
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a study session
+      tags:
+      - study-session
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and the access token

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -22,7 +23,7 @@ import (
 var sqlFiles embed.FS
 
 type StudySessionRepository interface {
-	CreateOrUpdateUserStudySession(ctx context.Context, userID uuid.UUID, session models.StudySession) (*models.StudySession, error)
+	UpsertActiveStudySession(ctx context.Context, userID uuid.UUID, session models.StudySession) (*models.StudySession, error)
 	GetUserStudySessions(ctx context.Context, userID uuid.UUID) ([]models.StudySession, error)
 	GetUserActiveStudySession(ctx context.Context, userID uuid.UUID) (*models.StudySession, error)
 	AddSessionEvents(ctx context.Context, sessionID uuid.UUID, events []models.SessionEvent) error
@@ -103,7 +104,7 @@ func (r *studySessionRepository) GetUserActiveStudySession(ctx context.Context, 
 	return rawSessions[0].ToStudySession()
 }
 
-func (r *studySessionRepository) CreateOrUpdateUserStudySession(ctx context.Context, userID uuid.UUID, session models.StudySession) (*models.StudySession, error) {
+func (r *studySessionRepository) UpsertActiveStudySession(ctx context.Context, userID uuid.UUID, session models.StudySession) (*models.StudySession, error) {
 	tx, err := r.pgclient.BeginTransaction(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
@@ -130,11 +131,10 @@ func (r *studySessionRepository) CreateOrUpdateUserStudySession(ctx context.Cont
 
 	var resultSession DBStudySession
 	if sessionExists {
-		updatedSession, err := updateStudySession(ctx, tx, DBStudySession{
+		updatedSession, err := r.updateStudySession(tx, DBStudySession{
 			ID:           existingSession.ID,
 			Title:        session.Title,
 			Notes:        session.Notes,
-			Date:         session.Date,
 			SessionState: string(session.SessionState),
 		})
 		if err != nil {
@@ -142,11 +142,11 @@ func (r *studySessionRepository) CreateOrUpdateUserStudySession(ctx context.Cont
 		}
 		resultSession = *updatedSession
 	} else {
-		newSession, err := createStudySession(ctx, tx, DBStudySession{
+		newSession, err := r.createStudySession(tx, DBStudySession{
 			UserID:       userID.String(),
 			Title:        session.Title,
 			Notes:        session.Notes,
-			Date:         session.Date,
+			Date:         time.Now(),
 			SessionState: string(models.SessionStateActive),
 		})
 		if err != nil {
@@ -215,17 +215,8 @@ func (r *studySessionRepository) AddSessionEvents(ctx context.Context, sessionID
 	return nil
 }
 
-func updateStudySession(ctx context.Context, dbTx *sqlx.Tx, dbSession DBStudySession) (*DBStudySession, error) {
-	query := `
-            UPDATE study_sessions 
-            SET title = :title,
-                notes = :notes,
-                date = :date,
-				session_state = :session_state
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = :id
-            RETURNING *
-        `
+func (r *studySessionRepository) updateStudySession(dbTx *sqlx.Tx, dbSession DBStudySession) (*DBStudySession, error) {
+	query := r.sqlQueries["update_study_session"]
 	rows, err := dbTx.NamedQuery(query, dbSession)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update study session: %w", err)
@@ -242,20 +233,15 @@ func updateStudySession(ctx context.Context, dbTx *sqlx.Tx, dbSession DBStudySes
 	return &dbSession, nil
 }
 
-func createStudySession(ctx context.Context, dbTx *sqlx.Tx, dbSession DBStudySession) (*DBStudySession, error) {
+func (r *studySessionRepository) createStudySession(dbTx *sqlx.Tx, dbSession DBStudySession) (*DBStudySession, error) {
 	var resultSession DBStudySession
-	query := `
-            INSERT INTO study_sessions (user_id, title, notes, date, session_state)
-            VALUES (:user_id, :title, :notes, :date, :session_state)
-            RETURNING *
-        `
+	query := r.sqlQueries["create_study_session"]
 	dbSession.Date = time.Now()
 	dbSession.SessionState = string(models.SessionStateActive)
 	rows, err := dbTx.NamedQuery(query, dbSession)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create study session: %w", err)
 	}
-	defer rows.Close()
 
 	if !rows.Next() {
 		return nil, fmt.Errorf("no rows returned after insert")
@@ -264,16 +250,15 @@ func createStudySession(ctx context.Context, dbTx *sqlx.Tx, dbSession DBStudySes
 	if err := rows.StructScan(&resultSession); err != nil {
 		return nil, fmt.Errorf("failed to scan created session: %w", err)
 	}
+	rows.Close()
 
-	query = `
-			INSERT INTO session_events (session_id, event_type, event_time)
-			VALUES ($1, $2, $3)
-		`
-	_, err = dbTx.ExecContext(ctx, query,
-		resultSession.ID,
-		string(models.EventTypeStart),
-		time.Now().String(),
-	)
+	startEvent := DBSessionEvent{
+		SessionID: resultSession.ID,
+		EventType: string(models.EventTypeStart),
+		EventTime: ptr.Of(time.Now().UTC()),
+	}
+	query = r.sqlQueries["create_session_event"]
+	_, err = dbTx.NamedExec(query, startEvent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert session event: %w", err)
 	}

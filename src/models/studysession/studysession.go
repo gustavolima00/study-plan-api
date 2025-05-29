@@ -23,9 +23,8 @@ const (
 )
 
 type SessionEvent struct {
-	EventType   EventType `json:"event_type"`
-	Description string    `json:"description"`
-	EventTime   time.Time `json:"event_time"`
+	EventType EventType `json:"event_type"`
+	EventTime time.Time `json:"event_time"`
 }
 
 type SessionState string
@@ -44,4 +43,17 @@ type StudySession struct {
 	SessionState SessionState   `json:"session_state"`
 	Events       []SessionEvent `json:"events"`
 	Subjects     []Subject      `json:"subjects"`
+}
+
+type UpsertActiveStudySessionRequest struct {
+	Title string `json:"title"`
+	Notes string `json:"notes"`
+}
+
+type UpsertActiveStudySessionResponse struct {
+	ID           uuid.UUID    `json:"id"`
+	Title        string       `json:"title"`
+	Notes        string       `json:"notes"`
+	Date         time.Time    `json:"date"`
+	SessionState SessionState `json:"session_state"`
 }

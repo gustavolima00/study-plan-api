@@ -238,6 +238,63 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/study-session/upsert-active": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new study session for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "study-session"
+                ],
+                "summary": "Create a study session",
+                "parameters": [
+                    {
+                        "description": "Study session data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/studysession.UpsertActiveStudySessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session details",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -352,6 +409,9 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
                 }
             }
         },
@@ -359,6 +419,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "online_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "studysession.UpsertActiveStudySessionRequest": {
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

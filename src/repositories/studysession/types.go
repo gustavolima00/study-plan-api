@@ -19,11 +19,10 @@ type DBSubject struct {
 }
 
 type DBSessionEvent struct {
-	ID          string     `db:"id" json:"id"`
-	SessionID   string     `db:"user_id" json:"user_id"`
-	EventType   string     `db:"title" json:"title"`
-	Description string     `db:"notes" json:"notes"`
-	EventTime   *time.Time `db:"event_time" json:"event_time"`
+	ID        string     `db:"id" json:"id"`
+	SessionID string     `db:"session_id" json:"session_id"`
+	EventType string     `db:"event_type" json:"event_type"`
+	EventTime *time.Time `db:"event_time" json:"event_time"`
 }
 
 type DBStudySession struct {

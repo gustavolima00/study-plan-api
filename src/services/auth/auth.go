@@ -5,6 +5,7 @@ import (
 	"go-api/src/clients/keycloak"
 	model "go-api/src/models/auth"
 
+	"github.com/google/uuid"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -91,9 +92,13 @@ func (s *authService) GetUserInfo(ctx context.Context, request model.VerifySessi
 		s.logger.Warn("User is nil")
 		return nil, nil
 	}
+	userID, err := uuid.Parse(res.Sub)
+	if err != nil {
+		return nil, err
+	}
 
 	return &model.UserInfo{
-		UUID:              res.Sub,
+		ID:                userID,
 		Username:          res.Username,
 		Email:             res.Email,
 		EmailVerified:     res.EmailVerified,

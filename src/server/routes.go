@@ -5,6 +5,7 @@ import (
 	// Generate automatically the swagger docs
 	"go-api/src/handlers/auth"
 	"go-api/src/handlers/healthcheck"
+	"go-api/src/handlers/studysession"
 	"go-api/src/server/middlewares"
 
 	"github.com/labstack/echo/v4"
@@ -16,9 +17,11 @@ import (
 type RegisterRoutesParams struct {
 	fx.In
 
-	Echo        *echo.Echo
-	Healthcheck healthcheck.Handler
-	AuthHandler auth.AuthHandler
+	Echo                *echo.Echo
+	Healthcheck         healthcheck.Handler
+	AuthHandler         auth.AuthHandler
+	StudySessionHandler studysession.StudySessionHandler
+
 	Middlewares middlewares.Middlewares
 }
 
@@ -33,5 +36,8 @@ func RegisterRoutes(p RegisterRoutesParams) {
 	p.Echo.POST("/auth/refresh", p.AuthHandler.UpdateSession)
 	p.Echo.POST("/auth/logout", p.AuthHandler.FinishSession)
 	p.Echo.GET("/auth/user", p.AuthHandler.GetUser, p.Middlewares.AuthMiddleware())
+
+	// StudySession routes
+	p.Echo.POST("/study-session/upsert-active", p.StudySessionHandler.UpsertActiveStudySession, p.Middlewares.AuthMiddleware())
 
 }
