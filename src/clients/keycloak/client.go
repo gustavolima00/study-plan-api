@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-api/config"
-	models "go-api/src/models/keycloak"
 	"io"
 	"net/http"
 	"net/url"
@@ -26,9 +25,9 @@ const (
 )
 
 type KeycloakClient interface {
-	GetOIDCToken(ctx context.Context, request models.GetOIDCTokenRequest) (*models.GetOIDCTokenResponse, error)
-	RevokeOIDCToken(ctx context.Context, request models.RevokeOIDCTokenRequest) error
-	IntrospectOIDCToken(ctx context.Context, request models.IntrospectOIDCTokenRequest) (*models.IntrospectOIDCTokenResponse, error)
+	GetOIDCToken(ctx context.Context, request GetOIDCTokenRequest) (*GetOIDCTokenResponse, error)
+	RevokeOIDCToken(ctx context.Context, request RevokeOIDCTokenRequest) error
+	IntrospectOIDCToken(ctx context.Context, request IntrospectOIDCTokenRequest) (*IntrospectOIDCTokenResponse, error)
 }
 
 type keycloakClient struct {
@@ -56,7 +55,7 @@ func NewKeycloakClient(params KeycloakClientParams) KeycloakClient {
 	}
 }
 
-func (c *keycloakClient) GetOIDCToken(ctx context.Context, request models.GetOIDCTokenRequest) (*models.GetOIDCTokenResponse, error) {
+func (c *keycloakClient) GetOIDCToken(ctx context.Context, request GetOIDCTokenRequest) (*GetOIDCTokenResponse, error) {
 	if request.ClientID == "" {
 		request.ClientID = c.config.KeycloakClientID
 	}
@@ -79,7 +78,7 @@ func (c *keycloakClient) GetOIDCToken(ctx context.Context, request models.GetOID
 		Method:      http.MethodPost,
 		Body:        body,
 	}
-	response, err := makeRequest[models.GetOIDCTokenResponse](params)
+	response, err := makeRequest[GetOIDCTokenResponse](params)
 	if err != nil {
 		c.logger.Debug("failed to make request", zap.Error(err))
 		return nil, err
@@ -87,7 +86,7 @@ func (c *keycloakClient) GetOIDCToken(ctx context.Context, request models.GetOID
 	return response, nil
 }
 
-func (c *keycloakClient) RevokeOIDCToken(ctx context.Context, request models.RevokeOIDCTokenRequest) error {
+func (c *keycloakClient) RevokeOIDCToken(ctx context.Context, request RevokeOIDCTokenRequest) error {
 	if request.ClientID == "" {
 		request.ClientID = c.config.KeycloakClientID
 	}
@@ -110,7 +109,7 @@ func (c *keycloakClient) RevokeOIDCToken(ctx context.Context, request models.Rev
 		Body:        body,
 	}
 
-	res, err := makeRequest[models.RevokeOIDCTokenResponse](params)
+	res, err := makeRequest[RevokeOIDCTokenResponse](params)
 	c.logger.Debug("revoke oidc token response", zap.Any("response", res))
 
 	if err != nil {
@@ -120,7 +119,7 @@ func (c *keycloakClient) RevokeOIDCToken(ctx context.Context, request models.Rev
 	return nil
 }
 
-func (c *keycloakClient) IntrospectOIDCToken(ctx context.Context, request models.IntrospectOIDCTokenRequest) (*models.IntrospectOIDCTokenResponse, error) {
+func (c *keycloakClient) IntrospectOIDCToken(ctx context.Context, request IntrospectOIDCTokenRequest) (*IntrospectOIDCTokenResponse, error) {
 	path := fmt.Sprintf(_INTROSPECT_OIDC_TOKEN_PATH, c.config.KeycloakRealm)
 	body, err := buildFormEncodedBody(request)
 	if err != nil {
@@ -138,7 +137,7 @@ func (c *keycloakClient) IntrospectOIDCToken(ctx context.Context, request models
 		Username:    c.config.KeycloakClientID,
 		Password:    c.config.KeycloakClientSecret,
 	}
-	response, err := makeRequest[models.IntrospectOIDCTokenResponse](params)
+	response, err := makeRequest[IntrospectOIDCTokenResponse](params)
 	if err != nil {
 		c.logger.Debug("failed to make request", zap.Error(err))
 		return nil, err

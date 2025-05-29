@@ -3,10 +3,8 @@ package studysession
 import (
 	"context"
 	"embed"
-	"encoding/json"
-	"fmt"
-	"go-api/src/gateways/postgres"
-	models "go-api/src/models/database/studysession"
+	"go-api/src/clients/postgres"
+	models "go-api/src/models/studysession"
 	"io/fs"
 	"path/filepath"
 
@@ -15,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:embed *.sql
+//go:embed sql/*.sql
 var sqlFiles embed.FS
 
 const (
@@ -73,48 +71,26 @@ func NewStudySessionRepository(p StudySessionRepositoryParams) (StudySessionRepo
 	}, nil
 }
 
-type rawSession struct {
-	models.StudySession
-
-	EventsRaw   json.RawMessage `db:"events"`
-	SubjectsRaw json.RawMessage `db:"subjects"`
-}
-
-func mapSession(rawSession rawSession) (*models.StudySession, error) {
-	if err := json.Unmarshal(rawSession.SubjectsRaw, &rawSession.Subjects); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal subjects: %w", err)
-	}
-
-	if err := json.Unmarshal(rawSession.EventsRaw, &rawSession.Events); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal events: %w", err)
-	}
-	return &rawSession.StudySession, nil
-}
-
-func mapSessions(rawSessions []rawSession) ([]models.StudySession, error) {
-	sessions := make([]models.StudySession, len(rawSessions))
-	for i, rawSession := range rawSessions {
-		result, err := mapSession(rawSession)
-		if err != nil {
-			return nil, err
-		}
-		sessions[i] = *result
-	}
-	return sessions, nil
-}
-
 func (r *studySessionRepository) GetUserStudySessions(ctx context.Context, userID uuid.UUID) ([]models.StudySession, error) {
-	var rawSessions []rawSession
+	var rawSessions []DBStudySession
 	query := r.sqlQueries[getUserStudySessionsQueryKey]
 	err := r.pgclient.QuerySelect(ctx, &rawSessions, query, userID.String())
 	if err != nil {
 		return nil, err
 	}
-	return mapSessions(rawSessions)
+	sessions := make([]models.StudySession, len(rawSessions))
+	for i, rawSession := range rawSessions {
+		session, err := rawSession.ToStudySession()
+		if err != nil {
+			return nil, err
+		}
+		sessions[i] = *session
+	}
+	return sessions, nil
 }
 
 func (r *studySessionRepository) GetUserStudySession(ctx context.Context, sessionID uuid.UUID) (*models.StudySession, error) {
-	var rawSessions []rawSession
+	var rawSessions []DBStudySession
 	query := r.sqlQueries[getStudySessionQueryKey]
 	err := r.pgclient.QuerySelect(ctx, &rawSessions, query, sessionID.String())
 	if err != nil {
@@ -123,5 +99,5 @@ func (r *studySessionRepository) GetUserStudySession(ctx context.Context, sessio
 	if len(rawSessions) == 0 {
 		return nil, nil
 	}
-	return mapSession(rawSessions[0])
+	return rawSessions[0].ToStudySession()
 }

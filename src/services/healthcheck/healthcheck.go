@@ -2,7 +2,6 @@ package healthcheck
 
 import (
 	"errors"
-	"go-api/src/gateways/postgres"
 	"time"
 
 	"go.uber.org/fx"
@@ -22,21 +21,17 @@ type Service interface {
 // Params defines the dependencies that the healthcheck module needs
 type Params struct {
 	fx.In
-
-	PostgresClient postgres.PostgresClient
 }
 
 type service struct {
-	onlineSince    *time.Time
-	postgresClient postgres.PostgresClient
+	onlineSince *time.Time
 }
 
 // New returns an implementation of Healthcheck interface
 func New(p Params) Service {
 	now := time.Now()
 	return &service{
-		onlineSince:    &now,
-		postgresClient: p.PostgresClient,
+		onlineSince: &now,
 	}
 }
 

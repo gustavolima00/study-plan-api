@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"go-api/src/gateways/keycloak"
+	"go-api/src/clients/keycloak"
 	model "go-api/src/models/auth"
 
 	"go.uber.org/fx"
@@ -17,26 +17,30 @@ type AuthService interface {
 }
 
 type authService struct {
-	keycloakGateway keycloak.KeycloakGateway
-	logger          *zap.Logger
+	keycloakClient keycloak.KeycloakClient
+	logger         *zap.Logger
 }
 
 type AuthServiceParams struct {
 	fx.In
 
-	KeycloakGateway keycloak.KeycloakGateway
-	Logger          *zap.Logger
+	keycloakClient keycloak.KeycloakClient
+	Logger         *zap.Logger
 }
 
 func NewAuthService(params AuthServiceParams) AuthService {
 	return &authService{
-		keycloakGateway: params.KeycloakGateway,
-		logger:          params.Logger,
+		keycloakClient: params.keycloakClient,
+		logger:         params.Logger,
 	}
 }
 
 func (s *authService) CreateSession(ctx context.Context, request model.CreateSessionRequest) (*model.SessionInfo, error) {
-	res, err := s.keycloakGateway.GetOIDCToken(ctx, request.Username, request.Password)
+	res, err := s.keycloakClient.GetOIDCToken(ctx, keycloak.GetOIDCTokenRequest{
+		GrantType: "password",
+		Username:  request.Username,
+		Password:  request.Password,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +56,10 @@ func (s *authService) CreateSession(ctx context.Context, request model.CreateSes
 }
 
 func (s *authService) UpdateSession(ctx context.Context, request model.UpdateSessionRequest) (*model.SessionInfo, error) {
-	token, err := s.keycloakGateway.RefreshOIDCToken(ctx, request.RefreshToken)
+	token, err := s.keycloakClient.GetOIDCToken(ctx, keycloak.GetOIDCTokenRequest{
+		GrantType:    "refresh_token",
+		RefreshToken: request.RefreshToken,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +71,9 @@ func (s *authService) UpdateSession(ctx context.Context, request model.UpdateSes
 }
 
 func (s *authService) FinishSession(ctx context.Context, request model.FinishSessionRequest) (*model.FinishSessionResponse, error) {
-	err := s.keycloakGateway.RevokeOIDCToken(ctx, request.AccessToken)
+	err := s.keycloakClient.RevokeOIDCToken(ctx, keycloak.RevokeOIDCTokenRequest{
+		Token: request.AccessToken,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +81,9 @@ func (s *authService) FinishSession(ctx context.Context, request model.FinishSes
 }
 
 func (s *authService) GetUserInfo(ctx context.Context, request model.VerifySessionRequest) (*model.UserInfo, error) {
-	res, err := s.keycloakGateway.IntrospectOIDCToken(ctx, request.AccessToken)
+	res, err := s.keycloakClient.IntrospectOIDCToken(ctx, keycloak.IntrospectOIDCTokenRequest{
+		AccessToken: request.AccessToken,
+	})
 	if err != nil {
 		return nil, err
 	}

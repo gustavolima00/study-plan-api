@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"go-api/config"
-	"go-api/server"
-	"go-api/src/gateways"
+	"go-api/src/clients"
 	"go-api/src/handlers"
 	"go-api/src/repositories"
+	"go-api/src/server"
 	"go-api/src/services"
 	"log"
 	"time"
@@ -36,7 +36,7 @@ func main() {
 		server.Module,
 		services.Module,
 		handlers.Module,
-		gateways.Module,
+		clients.Module,
 		repositories.Module,
 
 		// Logger

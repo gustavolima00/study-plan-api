@@ -1,7 +1,7 @@
 package server
 
 import (
-	"go-api/server/middlewares"
+	"go-api/src/server/middlewares"
 
 	"go.uber.org/fx"
 )

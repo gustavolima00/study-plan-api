@@ -1,8 +1,8 @@
-package gateways
+package clients
 
 import (
-	"go-api/src/gateways/keycloak"
-	"go-api/src/gateways/postgres"
+	"go-api/src/clients/keycloak"
+	"go-api/src/clients/postgres"
 
 	"go.uber.org/fx"
 )
@@ -10,9 +10,6 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		keycloak.NewKeycloakClient,
-		keycloak.NewKeycloakGateway,
-	),
-	fx.Provide(
 		postgres.NewPostgresClient,
 	),
 )

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-api/config"
-	models "go-api/src/models/keycloak"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,23 +29,23 @@ func TestGetOIDCToken(t *testing.T) {
 		HttpResponse       any
 		HttpResponseStatus int
 		ExpectedError      error
-		Request            models.GetOIDCTokenRequest
-		ExpectedResponse   *models.GetOIDCTokenResponse
+		Request            GetOIDCTokenRequest
+		ExpectedResponse   *GetOIDCTokenResponse
 	}{
 		"password grant - success": {
-			HttpResponse: models.GetOIDCTokenResponse{
+			HttpResponse: GetOIDCTokenResponse{
 				AccessToken:  "test-access-token",
 				RefreshToken: "test-refresh-token",
 				ExpiresIn:    300,
 			},
 			HttpResponseStatus: http.StatusOK,
 			ExpectedError:      nil,
-			Request: models.GetOIDCTokenRequest{
+			Request: GetOIDCTokenRequest{
 				Username:  "test-user",
 				Password:  "test-pass",
 				GrantType: "password",
 			},
-			ExpectedResponse: &models.GetOIDCTokenResponse{
+			ExpectedResponse: &GetOIDCTokenResponse{
 				AccessToken:  "test-access-token",
 				RefreshToken: "test-refresh-token",
 				ExpiresIn:    300,
@@ -55,7 +54,7 @@ func TestGetOIDCToken(t *testing.T) {
 		"fail - invalid response": {
 			HttpResponse:       []byte("invalid json"),
 			HttpResponseStatus: http.StatusOK,
-			Request: models.GetOIDCTokenRequest{
+			Request: GetOIDCTokenRequest{
 				Username:  "test-user",
 				Password:  "test-pass",
 				GrantType: "password",
@@ -109,26 +108,26 @@ func TestIntrospectOIDCToken(t *testing.T) {
 		HttpResponse       any
 		HttpResponseStatus int
 		ExpectedError      error
-		Request            models.IntrospectOIDCTokenRequest
-		ExpectedResponse   *models.IntrospectOIDCTokenResponse
+		Request            IntrospectOIDCTokenRequest
+		ExpectedResponse   *IntrospectOIDCTokenResponse
 	}{
 		"success": {
-			HttpResponse: models.IntrospectOIDCTokenResponse{
+			HttpResponse: IntrospectOIDCTokenResponse{
 				Active: true,
 			},
 			HttpResponseStatus: http.StatusOK,
 			ExpectedError:      nil,
-			Request: models.IntrospectOIDCTokenRequest{
+			Request: IntrospectOIDCTokenRequest{
 				AccessToken: "access-token",
 			},
-			ExpectedResponse: &models.IntrospectOIDCTokenResponse{
+			ExpectedResponse: &IntrospectOIDCTokenResponse{
 				Active: true,
 			},
 		},
 		"fail - invalid response": {
 			HttpResponse:       []byte("invalid json"),
 			HttpResponseStatus: http.StatusOK,
-			Request: models.IntrospectOIDCTokenRequest{
+			Request: IntrospectOIDCTokenRequest{
 				AccessToken: "access-token",
 			},
 			ExpectedError:    fmt.Errorf("json: cannot unmarshal string into Go value of type keycloak.IntrospectOIDCTokenResponse"),
