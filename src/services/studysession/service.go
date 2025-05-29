@@ -2,7 +2,9 @@ package studysession
 
 import (
 	"context"
-	"go-api/src/repositories/studysession"
+	models "go-api/src/models/studysession"
+	repository "go-api/src/repositories/studysession"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/fx"
@@ -14,14 +16,14 @@ type StudySessionService interface {
 }
 
 type studySessionService struct {
-	repository studysession.StudySessionRepository
+	repository repository.StudySessionRepository
 	logger     *zap.Logger
 }
 
 type StudySessionServiceParams struct {
 	fx.In
 
-	Repository studysession.StudySessionRepository
+	Repository repository.StudySessionRepository
 	Logger     *zap.Logger
 }
 
@@ -35,10 +37,17 @@ func NewStudySessionService(p StudySessionServiceParams) StudySessionService {
 func (s studySessionService) Sample() {
 	ctx := context.TODO()
 	userID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
-	sessionID := uuid.MustParse("cccccccc-cccc-cccc-cccc-cccccccccccc")
 
 	studySessions, err := s.repository.GetUserStudySessions(ctx, userID)
 	s.logger.Debug("result", zap.Any("studySessions", studySessions), zap.Error(err))
-	studySession, err := s.repository.GetUserStudySession(ctx, sessionID)
+	studySession, err := s.repository.GetUserActiveStudySession(ctx, userID)
 	s.logger.Debug("result", zap.Any("studySession", studySession), zap.Error(err))
+
+	newSession, err := s.repository.CreateOrUpdateUserStudySession(ctx, userID, models.StudySession{
+		Date:         time.Now(),
+		Notes:        "Some note",
+		Title:        "Some title",
+		SessionState: models.SessionState("active"),
+	})
+	s.logger.Debug("result", zap.Any("newSession", newSession), zap.Error(err))
 }

@@ -21,9 +21,7 @@ select s.*,
                     to_char (
                         e.event_time::timestamp at time zone 'UTC',
                         'YYYY-MM-DD"T"HH24:MI:SS"Z"'
-                    ),
-                    'device_info',
-                    e.device_info
+                    )
                 )
                 order by e.event_time
             )

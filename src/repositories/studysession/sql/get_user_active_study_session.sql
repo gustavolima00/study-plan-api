@@ -21,9 +21,7 @@ select s.*,
                     to_char (
                         e.event_time::timestamp at time zone 'UTC',
                         'YYYY-MM-DD"T"HH24:MI:SS"Z"'
-                    ),
-                    'device_info',
-                    e.device_info
+                    )
                 )
                 order by e.event_time
             )
@@ -31,4 +29,5 @@ select s.*,
         where e.session_id = s.id
     ) as events
 from study_sessions s
-where s.id = $1
+where s.user_id = $1
+    and s.session_state = 'active'

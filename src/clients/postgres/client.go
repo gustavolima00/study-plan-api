@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"go-api/config"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 type PostgresClient interface {
 	QuerySelect(ctx context.Context, result any, sqlQuery string, args ...any) error
+	BeginTransaction(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error)
 }
 
 type postgresClient struct {
@@ -60,6 +62,10 @@ func NewPostgresClient(params PostgresClientParams) (PostgresClient, error) {
 	}, nil
 }
 
-func (c *postgresClient) QuerySelect(ctx context.Context, result interface{}, sqlQuery string, args ...any) error {
+func (c *postgresClient) QuerySelect(ctx context.Context, result any, sqlQuery string, args ...any) error {
 	return c.db.SelectContext(ctx, result, sqlQuery, args...)
+}
+
+func (c *postgresClient) BeginTransaction(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error) {
+	return c.db.BeginTxx(ctx, opts)
 }

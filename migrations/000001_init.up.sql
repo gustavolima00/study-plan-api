@@ -28,16 +28,15 @@ CREATE TABLE
         date DATE NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        session_state VARCHAR(100) NOT NULL DEFAULT 0
+        session_state VARCHAR(100) NOT NULL DEFAULT ''
     );
 
 CREATE TABLE
     session_events (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
         session_id UUID NOT NULL REFERENCES study_sessions (id) ON DELETE CASCADE,
-        event_type VARCHAR(100) NOT NULL DEFAULT 0,
-        event_time TIMESTAMP NOT NULL,
-        device_info VARCHAR(100)
+        event_type VARCHAR(100) NOT NULL DEFAULT '',
+        event_time TIMESTAMP NOT NULL
     );
 
 CREATE TABLE

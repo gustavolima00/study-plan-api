@@ -24,13 +24,13 @@ type authService struct {
 type AuthServiceParams struct {
 	fx.In
 
-	keycloakClient keycloak.KeycloakClient
+	KeycloakClient keycloak.KeycloakClient
 	Logger         *zap.Logger
 }
 
 func NewAuthService(params AuthServiceParams) AuthService {
 	return &authService{
-		keycloakClient: params.keycloakClient,
+		keycloakClient: params.KeycloakClient,
 		logger:         params.Logger,
 	}
 }

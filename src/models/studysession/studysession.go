@@ -15,14 +15,25 @@ type Subject struct {
 
 type EventType string
 
+const (
+	EventTypeStart  EventType = "start"
+	EventTypePause  EventType = "pause"
+	EventTypeResume EventType = "resume"
+	EventTypeStop   EventType = "stop"
+)
+
 type SessionEvent struct {
 	EventType   EventType `json:"event_type"`
 	Description string    `json:"description"`
 	EventTime   time.Time `json:"event_time"`
-	DeviceInfo  string    `json:"device_info"`
 }
 
 type SessionState string
+
+const (
+	SessionStateActive    SessionState = "active"
+	SessionStateCompleted SessionState = "completed"
+)
 
 type StudySession struct {
 	ID           uuid.UUID      `json:"id"`

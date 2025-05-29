@@ -24,7 +24,6 @@ type DBSessionEvent struct {
 	EventType   string     `db:"title" json:"title"`
 	Description string     `db:"notes" json:"notes"`
 	EventTime   *time.Time `db:"event_time" json:"event_time"`
-	DeviceInfo  string     `db:"device_info" json:"device_info"`
 }
 
 type DBStudySession struct {
@@ -57,12 +56,17 @@ func (s *DBStudySession) ToStudySession() (*models.StudySession, error) {
 		Date:         s.Date,
 		SessionState: models.SessionState(s.SessionState),
 	}
-	if err := json.Unmarshal(s.SubjectsRaw, &session.Subjects); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal subjects: %w", err)
+	if len(s.SubjectsRaw) > 0 {
+		if err := json.Unmarshal(s.SubjectsRaw, &session.Subjects); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal subjects: %w", err)
+		}
 	}
 
-	if err := json.Unmarshal(s.EventsRaw, &session.Events); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal events: %w", err)
+	if len(s.EventsRaw) > 0 {
+		if err := json.Unmarshal(s.EventsRaw, &session.Events); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal events: %w", err)
+		}
 	}
+
 	return &session, nil
 }
