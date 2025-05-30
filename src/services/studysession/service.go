@@ -14,7 +14,9 @@ import (
 )
 
 type StudySessionService interface {
-	UpsertActiveStudySession(ctx context.Context, request models.UpsertActiveStudySessionRequest) (*models.UpsertActiveStudySessionResponse, error)
+	CreateStudySession(ctx context.Context, request UpsertActiveStudySessionRequest) (*models.StudySession, error)
+	AddStudySessionEvents(ctx context.Context, request AddStudySessionEventsRequest) (*models.StudySession, error)
+	FinishStudySession(ctx context.Context, request FinishStudySessionRequest) (*models.StudySession, error)
 }
 
 type studySessionService struct {
@@ -36,7 +38,7 @@ func NewStudySessionService(p StudySessionServiceParams) StudySessionService {
 	}
 }
 
-func (s studySessionService) UpsertActiveStudySession(ctx context.Context, request models.UpsertActiveStudySessionRequest) (*models.UpsertActiveStudySessionResponse, error) {
+func (s studySessionService) CreateStudySession(ctx context.Context, request UpsertActiveStudySessionRequest) (*models.StudySession, error) {
 	user := ctx.Value(constants.ContextKeyUserInfoKey).(*authmodel.UserInfo)
 	if user == nil {
 		s.logger.Error("Failed to create studySession, no user found in context")
@@ -56,11 +58,61 @@ func (s studySessionService) UpsertActiveStudySession(ctx context.Context, reque
 		logger.Error("Failed to create studySession", zap.Error(err))
 		return nil, err
 	}
-	return &models.UpsertActiveStudySessionResponse{
-		ID:           studySession.ID,
-		Title:        studySession.Title,
-		Notes:        studySession.Notes,
-		Date:         studySession.Date,
-		SessionState: models.SessionState(studySession.SessionState),
-	}, nil
+	return studySession, nil
+}
+
+func (s studySessionService) AddStudySessionEvents(ctx context.Context, request AddStudySessionEventsRequest) (*models.StudySession, error) {
+	user := ctx.Value(constants.ContextKeyUserInfoKey).(*authmodel.UserInfo)
+	if user == nil {
+		s.logger.Error("Failed to create studySession, no user found in context")
+		return nil, fmt.Errorf("no user found in context")
+	}
+
+	logger := s.logger.With(
+		zap.Stringer("user_id", user.ID),
+	)
+	activeStudySession, err := s.repository.GetUserActiveStudySession(ctx, user.ID)
+	if err != nil {
+		logger.Error("Failed to get active studySession", zap.Error(err))
+		return nil, err
+	}
+	studySession, err := s.repository.AddSessionEvents(ctx, activeStudySession.UserID, request.Events)
+	if err != nil {
+		logger.Error("Failed create session events", zap.Error(err))
+		return nil, err
+	}
+	return studySession, nil
+}
+
+func (s studySessionService) FinishStudySession(ctx context.Context, request FinishStudySessionRequest) (*models.StudySession, error) {
+	user := ctx.Value(constants.ContextKeyUserInfoKey).(*authmodel.UserInfo)
+	if user == nil {
+		s.logger.Error("Failed to create studySession, no user found in context")
+		return nil, fmt.Errorf("no user found in context")
+	}
+	logger := s.logger.With(
+		zap.Stringer("user_id", user.ID),
+	)
+	activeStudySession, err := s.repository.GetUserActiveStudySession(ctx, user.ID)
+	if err != nil {
+		logger.Error("Failed to get active studySession", zap.Error(err))
+		return nil, err
+	}
+	studySession, err := s.repository.AddSessionEvents(ctx, activeStudySession.UserID, []models.SessionEvent{
+		{
+			EventType: models.EventTypeStop,
+			EventTime: request.FinishedAt,
+		},
+	})
+	if err != nil {
+		logger.Error("Failed add session finish event", zap.Error(err))
+		return nil, err
+	}
+	studySession.SessionState = models.SessionStateCompleted
+	studySession, err = s.repository.UpsertActiveStudySession(ctx, activeStudySession.UserID, *studySession)
+	if err != nil {
+		logger.Error("Failed to upsert finished session", zap.Error(err))
+		return nil, err
+	}
+	return studySession, nil
 }

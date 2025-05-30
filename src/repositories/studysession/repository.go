@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/gotidy/ptr"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -24,9 +23,9 @@ var sqlFiles embed.FS
 
 type StudySessionRepository interface {
 	UpsertActiveStudySession(ctx context.Context, userID uuid.UUID, session models.StudySession) (*models.StudySession, error)
-	GetUserStudySessions(ctx context.Context, userID uuid.UUID) ([]models.StudySession, error)
 	GetUserActiveStudySession(ctx context.Context, userID uuid.UUID) (*models.StudySession, error)
-	AddSessionEvents(ctx context.Context, sessionID uuid.UUID, events []models.SessionEvent) error
+	GetStudySessionByID(ctx context.Context, sessionID uuid.UUID) (*models.StudySession, error)
+	AddSessionEvents(ctx context.Context, sessionID uuid.UUID, events []models.SessionEvent) (*models.StudySession, error)
 }
 
 type studySessionRepository struct {
@@ -73,37 +72,6 @@ func NewStudySessionRepository(p StudySessionRepositoryParams) (StudySessionRepo
 	}, nil
 }
 
-func (r *studySessionRepository) GetUserStudySessions(ctx context.Context, userID uuid.UUID) ([]models.StudySession, error) {
-	var rawSessions []DBStudySession
-	query := r.sqlQueries["get_user_study_sessions"]
-	err := r.pgclient.QuerySelect(ctx, &rawSessions, query, userID.String())
-	if err != nil {
-		return nil, err
-	}
-	sessions := make([]models.StudySession, len(rawSessions))
-	for i, rawSession := range rawSessions {
-		session, err := rawSession.ToStudySession()
-		if err != nil {
-			return nil, err
-		}
-		sessions[i] = *session
-	}
-	return sessions, nil
-}
-
-func (r *studySessionRepository) GetUserActiveStudySession(ctx context.Context, userID uuid.UUID) (*models.StudySession, error) {
-	var rawSessions []DBStudySession
-	query := r.sqlQueries["get_user_active_study_session"]
-	err := r.pgclient.QuerySelect(ctx, &rawSessions, query, userID.String())
-	if err != nil {
-		return nil, err
-	}
-	if len(rawSessions) == 0 {
-		return nil, nil
-	}
-	return rawSessions[0].ToStudySession()
-}
-
 func (r *studySessionRepository) UpsertActiveStudySession(ctx context.Context, userID uuid.UUID, session models.StudySession) (*models.StudySession, error) {
 	tx, err := r.pgclient.BeginTransaction(ctx, nil)
 	if err != nil {
@@ -120,8 +88,9 @@ func (r *studySessionRepository) UpsertActiveStudySession(ctx context.Context, u
 	err = tx.GetContext(
 		ctx,
 		&existingSession,
-		"SELECT * FROM study_sessions WHERE user_id = $1 AND session_state = 'active' LIMIT 1",
+		"SELECT * FROM study_sessions WHERE user_id = $1 AND session_state = $2 LIMIT 1",
 		userID,
+		string(models.SessionStateActive),
 	)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -155,22 +124,82 @@ func (r *studySessionRepository) UpsertActiveStudySession(ctx context.Context, u
 		resultSession = *newSession
 	}
 
-	// Commit transaction
+	var dbEvents []DBSessionEvent
+	err = tx.GetContext(
+		ctx,
+		&dbEvents,
+		"SELECT * FROM session_events WHERE session_id = $1 ORDER BY event_time",
+		resultSession.ID,
+	)
+
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return resultSession.ToStudySession()
+	return resultSession.ToStudySession(dbEvents)
 }
 
-func (r *studySessionRepository) AddSessionEvents(ctx context.Context, sessionID uuid.UUID, events []models.SessionEvent) error {
-	if len(events) == 0 {
-		return nil
-	}
-
+func (r *studySessionRepository) GetUserActiveStudySession(ctx context.Context, userID uuid.UUID) (*models.StudySession, error) {
 	tx, err := r.pgclient.BeginTransaction(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	var dbSession DBStudySession
+	err = tx.GetContext(
+		ctx,
+		&dbSession,
+		"SELECT * FROM study_sessions WHERE user_id = $1 AND session_state = $2 LIMIT 1",
+		userID,
+		string(models.SessionStateActive),
+	)
+
+	var dbEvents []DBSessionEvent
+	err = tx.GetContext(
+		ctx,
+		&dbEvents,
+		"SELECT * FROM session_events WHERE session_id = $1 ORDER BY event_time",
+		dbSession.ID,
+	)
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return dbSession.ToStudySession(dbEvents)
+}
+
+func (r *studySessionRepository) GetStudySessionByID(ctx context.Context, sessionID uuid.UUID) (*models.StudySession, error) {
+	tx, err := r.pgclient.BeginTransaction(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	studySession, err := r.getStudySessionByID(ctx, tx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get study session: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return studySession, nil
+}
+
+func (r *studySessionRepository) AddSessionEvents(ctx context.Context, sessionID uuid.UUID, events []models.SessionEvent) (*models.StudySession, error) {
+	tx, err := r.pgclient.BeginTransaction(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	defer func() {
@@ -202,17 +231,23 @@ func (r *studySessionRepository) AddSessionEvents(ctx context.Context, sessionID
 		)
 		paramCount += 4
 	}
+	if len(events) != 0 {
+		_, err = tx.ExecContext(ctx, query, params...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to insert session events: %w", err)
+		}
+	}
 
-	_, err = tx.ExecContext(ctx, query, params...)
+	studySession, err := r.getStudySessionByID(ctx, tx, sessionID)
 	if err != nil {
-		return fmt.Errorf("failed to insert session events: %w", err)
+		return nil, fmt.Errorf("failed to get study session: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return nil
+	return studySession, nil
 }
 
 func (r *studySessionRepository) updateStudySession(dbTx *sqlx.Tx, dbSession DBStudySession) (*DBStudySession, error) {
@@ -255,7 +290,7 @@ func (r *studySessionRepository) createStudySession(dbTx *sqlx.Tx, dbSession DBS
 	startEvent := DBSessionEvent{
 		SessionID: resultSession.ID,
 		EventType: string(models.EventTypeStart),
-		EventTime: ptr.Of(time.Now().UTC()),
+		EventTime: time.Now().UTC(),
 	}
 	query = r.sqlQueries["create_session_event"]
 	_, err = dbTx.NamedExec(query, startEvent)
@@ -263,4 +298,29 @@ func (r *studySessionRepository) createStudySession(dbTx *sqlx.Tx, dbSession DBS
 		return nil, fmt.Errorf("failed to insert session event: %w", err)
 	}
 	return &resultSession, nil
+}
+
+func (r *studySessionRepository) getStudySessionByID(ctx context.Context, dbTx *sqlx.Tx, sessionID uuid.UUID) (*models.StudySession, error) {
+	var dbSession DBStudySession
+	err := dbTx.GetContext(
+		ctx,
+		&dbSession,
+		"SELECT * FROM study_sessions WHERE id = $1 LIMIT 1",
+		sessionID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var dbEvents []DBSessionEvent
+	err = dbTx.GetContext(
+		ctx,
+		&dbEvents,
+		"SELECT * FROM session_events WHERE session_id = $1 ORDER BY event_time",
+		dbSession.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return dbSession.ToStudySession(dbEvents)
 }

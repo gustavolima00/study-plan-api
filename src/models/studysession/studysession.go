@@ -6,13 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Subject struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-}
-
 type EventType string
 
 const (
@@ -42,18 +35,4 @@ type StudySession struct {
 	Date         time.Time      `json:"date"`
 	SessionState SessionState   `json:"session_state"`
 	Events       []SessionEvent `json:"events"`
-	Subjects     []Subject      `json:"subjects"`
-}
-
-type UpsertActiveStudySessionRequest struct {
-	Title string `json:"title"`
-	Notes string `json:"notes"`
-}
-
-type UpsertActiveStudySessionResponse struct {
-	ID           uuid.UUID    `json:"id"`
-	Title        string       `json:"title"`
-	Notes        string       `json:"notes"`
-	Date         time.Time    `json:"date"`
-	SessionState SessionState `json:"session_state"`
 }

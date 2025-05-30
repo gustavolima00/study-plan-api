@@ -38,6 +38,7 @@ func RegisterRoutes(p RegisterRoutesParams) {
 	p.Echo.GET("/auth/user", p.AuthHandler.GetUser, p.Middlewares.AuthMiddleware())
 
 	// StudySession routes
-	p.Echo.POST("/study-session/upsert-active", p.StudySessionHandler.UpsertActiveStudySession, p.Middlewares.AuthMiddleware())
-
+	p.Echo.POST("/study-session/start", p.StudySessionHandler.StartStudySession, p.Middlewares.AuthMiddleware())
+	p.Echo.POST("/study-session/add-events", p.StudySessionHandler.AddStudySessionEvents, p.Middlewares.AuthMiddleware())
+	p.Echo.POST("/study-session/finish", p.StudySessionHandler.FinishStudySession, p.Middlewares.AuthMiddleware())
 }
