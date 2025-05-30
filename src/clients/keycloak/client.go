@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go-api/config"
+	"go-api/src/config"
 	"io"
 	"net/http"
 	"net/url"

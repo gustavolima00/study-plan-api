@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"go-api/config"
+	"go-api/src/config"
 	"log"
 
 	"github.com/labstack/echo/v4"

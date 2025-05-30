@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"go-api/config"
+	"go-api/src/config"
 	"time"
 
 	"github.com/jmoiron/sqlx"

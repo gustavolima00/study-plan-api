@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "aleksandra.go-group-imports",
         "golang.go",
         "mtxr.sqltools"
     ]

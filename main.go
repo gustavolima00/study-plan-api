@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"go-api/config"
 	"go-api/src/clients"
+	"go-api/src/config"
 	"go-api/src/handlers"
 	"go-api/src/repositories"
 	"go-api/src/server"
