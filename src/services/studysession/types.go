@@ -6,8 +6,9 @@ import (
 )
 
 type UpsertActiveStudySessionRequest struct {
-	Title string `json:"title"`
-	Notes string `json:"notes"`
+	StartedAt time.Time `json:"started_at"`
+	Title     string    `json:"title"`
+	Notes     string    `json:"notes"`
 }
 
 type AddStudySessionEventsRequest struct {

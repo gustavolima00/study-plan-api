@@ -32,7 +32,7 @@ func (e DBSessionEvent) ToSessionEvent() models.SessionEvent {
 	}
 }
 
-func (s DBStudySession) ToStudySession(dbEvents []DBSessionEvent) (*models.StudySession, error) {
+func (s DBStudySession) ToStudySession() (*models.StudySession, error) {
 	id, err := uuid.Parse(s.ID)
 	if err != nil {
 		return nil, err
@@ -41,19 +41,12 @@ func (s DBStudySession) ToStudySession(dbEvents []DBSessionEvent) (*models.Study
 	if err != nil {
 		return nil, err
 	}
-	events := make([]models.SessionEvent, len(dbEvents))
-
-	for i, dbEvent := range dbEvents {
-		events[i] = dbEvent.ToSessionEvent()
-	}
-	session := models.StudySession{
+	return &models.StudySession{
 		ID:           id,
 		UserID:       userID,
 		Title:        s.Title,
 		Notes:        s.Notes,
 		Date:         s.Date,
 		SessionState: models.SessionState(s.SessionState),
-		Events:       events,
-	}
-	return &session, nil
+	}, nil
 }

@@ -1,8 +1,7 @@
 package server
 
 import (
-	_ "go-api/.internal/docs"
-	// Generate automatically the swagger docs
+	_ "go-api/.internal/docs" // Generate automatically the swagger docs
 	"go-api/src/handlers/auth"
 	"go-api/src/handlers/healthcheck"
 	"go-api/src/handlers/studysession"
@@ -21,24 +20,31 @@ type RegisterRoutesParams struct {
 	Healthcheck         healthcheck.Handler
 	AuthHandler         auth.AuthHandler
 	StudySessionHandler studysession.StudySessionHandler
-
-	Middlewares middlewares.Middlewares
+	Middlewares         middlewares.Middlewares
 }
 
 // RegisterRoutes registers the routes for the API.
 func RegisterRoutes(p RegisterRoutesParams) {
+	// Base routes
 	p.Echo.GET("/", p.Healthcheck.GetAPIStatus)
-
 	p.Echo.GET("/swagger/*any", echoSwagger.WrapHandler)
 
 	// Authentication routes
-	p.Echo.POST("/auth/login", p.AuthHandler.CreateSession)
-	p.Echo.POST("/auth/refresh", p.AuthHandler.UpdateSession)
-	p.Echo.POST("/auth/logout", p.AuthHandler.FinishSession)
-	p.Echo.GET("/auth/user", p.AuthHandler.GetUser, p.Middlewares.AuthMiddleware())
+	authGroup := p.Echo.Group("/auth")
+	{
+		authGroup.POST("/login", p.AuthHandler.CreateSession)
+		authGroup.POST("/refresh", p.AuthHandler.UpdateSession)
+		authGroup.POST("/logout", p.AuthHandler.FinishSession)
+		authGroup.GET("/user", p.AuthHandler.GetUser, p.Middlewares.AuthMiddleware())
+	}
 
 	// StudySession routes
-	p.Echo.POST("/study-session/start", p.StudySessionHandler.StartStudySession, p.Middlewares.AuthMiddleware())
-	p.Echo.POST("/study-session/add-events", p.StudySessionHandler.AddStudySessionEvents, p.Middlewares.AuthMiddleware())
-	p.Echo.POST("/study-session/finish", p.StudySessionHandler.FinishStudySession, p.Middlewares.AuthMiddleware())
+	studySessionGroup := p.Echo.Group("/study-session", p.Middlewares.AuthMiddleware())
+	{
+		studySessionGroup.POST("/start", p.StudySessionHandler.StartStudySession)
+		studySessionGroup.GET("", p.StudySessionHandler.GetActiveStudySession)
+		studySessionGroup.GET("/events", p.StudySessionHandler.GetActiveStudySessionEvents)
+		studySessionGroup.POST("/events", p.StudySessionHandler.AddStudySessionEvents)
+		studySessionGroup.POST("/finish", p.StudySessionHandler.FinishStudySession)
+	}
 }

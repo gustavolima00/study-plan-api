@@ -28,11 +28,10 @@ const (
 )
 
 type StudySession struct {
-	ID           uuid.UUID      `json:"id"`
-	UserID       uuid.UUID      `json:"user_id"`
-	Title        string         `json:"title"`
-	Notes        string         `json:"notes"`
-	Date         time.Time      `json:"date"`
-	SessionState SessionState   `json:"session_state"`
-	Events       []SessionEvent `json:"events"`
+	ID           uuid.UUID    `json:"id"`
+	UserID       uuid.UUID    `json:"user_id"`
+	Title        string       `json:"title"`
+	Notes        string       `json:"notes"`
+	Date         time.Time    `json:"date"`
+	SessionState SessionState `json:"session_state"`
 }

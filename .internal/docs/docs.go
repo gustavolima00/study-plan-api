@@ -239,7 +239,244 @@ const docTemplate = `{
                 }
             }
         },
-        "/study-session/upsert-active": {
+        "/study-session": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the user's active study session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "study-session"
+                ],
+                "summary": "Get active study session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/studysession.StudySession"
+                        }
+                    },
+                    "404": {
+                        "description": "No active session found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/study-session/events": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get events for the user's active study session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "study-session"
+                ],
+                "summary": "Get active study session events",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/studysession.SessionEvent"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active session found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add events to the user's active study session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "study-session"
+                ],
+                "summary": "Add events to active study session",
+                "parameters": [
+                    {
+                        "description": "Session events data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/studysession.AddStudySessionEventsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/studysession.StudySession"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active session found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Session not active",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/study-session/finish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Finish the user's active study session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "study-session"
+                ],
+                "summary": "Finish active study session",
+                "parameters": [
+                    {
+                        "description": "Finish session data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/studysession.FinishStudySessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/studysession.StudySession"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active session found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Session not active",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/study-session/start": {
             "post": {
                 "security": [
                     {
@@ -269,28 +506,37 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Session details",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/studysession.StudySession"
                         }
                     },
                     "400": {
-                        "description": "Invalid request",
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "409": {
+                        "description": "Active session already exists",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -423,10 +669,92 @@ const docTemplate = `{
                 }
             }
         },
+        "studysession.AddStudySessionEventsRequest": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/studysession.SessionEvent"
+                    }
+                }
+            }
+        },
+        "studysession.EventType": {
+            "type": "string",
+            "enum": [
+                "start",
+                "pause",
+                "resume",
+                "stop"
+            ],
+            "x-enum-varnames": [
+                "EventTypeStart",
+                "EventTypePause",
+                "EventTypeResume",
+                "EventTypeStop"
+            ]
+        },
+        "studysession.FinishStudySessionRequest": {
+            "type": "object",
+            "properties": {
+                "finished_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "studysession.SessionEvent": {
+            "type": "object",
+            "properties": {
+                "event_time": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/studysession.EventType"
+                }
+            }
+        },
+        "studysession.SessionState": {
+            "type": "string",
+            "enum": [
+                "active",
+                "completed"
+            ],
+            "x-enum-varnames": [
+                "SessionStateActive",
+                "SessionStateCompleted"
+            ]
+        },
+        "studysession.StudySession": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "session_state": {
+                    "$ref": "#/definitions/studysession.SessionState"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "studysession.UpsertActiveStudySessionRequest": {
             "type": "object",
             "properties": {
                 "notes": {
+                    "type": "string"
+                },
+                "started_at": {
                     "type": "string"
                 },
                 "title": {

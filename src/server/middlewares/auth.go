@@ -34,7 +34,6 @@ func (m middlewares) AuthMiddleware() echo.MiddlewareFunc {
 			}
 
 			ctx := context.WithValue(c.Request().Context(), constants.ContextKeyUserInfoKey, userInfo)
-			m.logger.Debug("user_authenticated", zap.Any("userInfo", userInfo))
 			c.SetRequest(c.Request().WithContext(ctx))
 			return next(c)
 		}

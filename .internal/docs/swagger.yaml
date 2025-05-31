@@ -81,9 +81,65 @@ definitions:
       online_time:
         type: string
     type: object
+  studysession.AddStudySessionEventsRequest:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/studysession.SessionEvent'
+        type: array
+    type: object
+  studysession.EventType:
+    enum:
+    - start
+    - pause
+    - resume
+    - stop
+    type: string
+    x-enum-varnames:
+    - EventTypeStart
+    - EventTypePause
+    - EventTypeResume
+    - EventTypeStop
+  studysession.FinishStudySessionRequest:
+    properties:
+      finished_at:
+        type: string
+    type: object
+  studysession.SessionEvent:
+    properties:
+      event_time:
+        type: string
+      event_type:
+        $ref: '#/definitions/studysession.EventType'
+    type: object
+  studysession.SessionState:
+    enum:
+    - active
+    - completed
+    type: string
+    x-enum-varnames:
+    - SessionStateActive
+    - SessionStateCompleted
+  studysession.StudySession:
+    properties:
+      date:
+        type: string
+      id:
+        type: string
+      notes:
+        type: string
+      session_state:
+        $ref: '#/definitions/studysession.SessionState'
+      title:
+        type: string
+      user_id:
+        type: string
+    type: object
   studysession.UpsertActiveStudySessionRequest:
     properties:
       notes:
+        type: string
+      started_at:
         type: string
       title:
         type: string
@@ -240,7 +296,158 @@ paths:
       summary: Get user info
       tags:
       - authentication
-  /study-session/upsert-active:
+  /study-session:
+    get:
+      description: Get the user's active study session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/studysession.StudySession'
+        "404":
+          description: No active session found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get active study session
+      tags:
+      - study-session
+  /study-session/events:
+    get:
+      description: Get events for the user's active study session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/studysession.SessionEvent'
+            type: array
+        "404":
+          description: No active session found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get active study session events
+      tags:
+      - study-session
+    post:
+      consumes:
+      - application/json
+      description: Add events to the user's active study session
+      parameters:
+      - description: Session events data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/studysession.AddStudySessionEventsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/studysession.StudySession'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: No active session found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Session not active
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add events to active study session
+      tags:
+      - study-session
+  /study-session/finish:
+    post:
+      consumes:
+      - application/json
+      description: Finish the user's active study session
+      parameters:
+      - description: Finish session data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/studysession.FinishStudySessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/studysession.StudySession'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: No active session found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Session not active
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Finish active study session
+      tags:
+      - study-session
+  /study-session/start:
     post:
       consumes:
       - application/json
@@ -255,22 +462,28 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: Session details
+        "201":
+          description: Created
           schema:
-            type: string
+            $ref: '#/definitions/studysession.StudySession'
         "400":
-          description: Invalid request
+          description: Bad Request
           schema:
-            type: string
-        "401":
-          description: Unauthorized
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Active session already exists
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Create a study session
